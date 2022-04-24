@@ -392,21 +392,6 @@ multiplyToInteger: anIntegerMultiplier
 
 	! !
 
-!Entero methodsFor: 'polymorphic operations' stamp: 'LT 4/22/2022 16:20:25'!
-restToFraction: aFractionSubtrahend 
-
-	^Fraccion with: (aFractionSubtrahend numerator - (self value * aFractionSubtrahend denominator)) over: (aFractionSubtrahend denominator)
-
-	! !
-
-!Entero methodsFor: 'polymorphic operations' stamp: 'LT 4/22/2022 15:53:06'!
-restToInteger: anIntegerSubtrahend 
-
-	^ self class with: anIntegerSubtrahend integerValue - value.
-
-	
-	! !
-
 !Entero methodsFor: 'polymorphic operations' stamp: 'LT 4/22/2022 16:16:20'!
 sumToFraction: aFractionAdder 
 
@@ -435,10 +420,10 @@ sumToInteger: anIntegerAdder
 	^anAdder sumToInteger: self.
 ! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'LT 4/22/2022 15:52:17'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'EE 4/24/2022 12:58:40'!
 - aSubtrahend 
 
-	^ aSubtrahend restToInteger: self
+	^ aSubtrahend negated sumToInteger: self
 	
 	! !
 
@@ -528,7 +513,7 @@ valueInRangeOfSubclass: aValue
 	
 	! !
 
-!Entero class methodsFor: 'instance creation' stamp: 'LT 4/24/2022 02:21:38'!
+!Entero class methodsFor: 'instance creation' stamp: 'EE 4/24/2022 12:57:19'!
 with: aValue 
 	
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
@@ -536,7 +521,8 @@ with: aValue
 	
 	^(Entero subclasses
 		detect: [:aSubclass | aSubclass valueInRangeOfSubclass: aValue]
-		ifNone: [self error: 'No se pudo inicializar un Entero con ese valor']) new initalizeWith: aValue.
+		ifNone: [self error: 'No se pudo inicializar un Entero con ese valor'])
+	new initalizeWith: aValue.
 	
 	! !
 
@@ -548,14 +534,10 @@ Entero subclass: #Cero
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Cero methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:36:03'!
+!Cero methodsFor: 'as yet unclassified' stamp: 'EE 4/24/2022 11:24:19'!
 fibonacci
 
-	| one |
-	
-	one := Entero with: 1.
-
-	^ one.! !
+	^ Entero with: 1.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -563,7 +545,7 @@ fibonacci
 Cero class
 	instanceVariableNames: ''!
 
-!Cero class methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:25:43'!
+!Cero class methodsFor: 'as yet unclassified' stamp: 'EE 4/24/2022 12:56:04'!
 valueInRangeOfSubclass: aValue 
 
 	^ aValue = 0.! !
@@ -629,14 +611,10 @@ Entero subclass: #Uno
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Uno methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:36:39'!
+!Uno methodsFor: 'as yet unclassified' stamp: 'EE 4/24/2022 11:27:50'!
 fibonacci
 
-	| one |
-	
-	one := Entero with: 1.
-
-	^ one.! !
+	^ Entero with: 1.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -644,7 +622,7 @@ fibonacci
 Uno class
 	instanceVariableNames: ''!
 
-!Uno class methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:27:31'!
+!Uno class methodsFor: 'as yet unclassified' stamp: 'EE 4/24/2022 12:56:12'!
 valueInRangeOfSubclass: aValue 
 
 	^ aValue = 1.! !
@@ -670,10 +648,10 @@ Numero subclass: #Fraccion
 	^ anAdder sumToFraction: self
 	! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'LT 4/22/2022 16:21:34'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'EE 4/24/2022 12:59:03'!
 - aSubtrahend 
 	
-	^ aSubtrahend  restToFraction: self
+	^ aSubtrahend negated sumToFraction: self
 	
 	
 ! !
@@ -767,26 +745,6 @@ multiplyToFraction: aFractionMultiplier
 multiplyToInteger: anIntegerMultiplier 
 	
 	^ anIntegerMultiplier value *  numerator / denominator 
-	! !
-
-!Fraccion methodsFor: 'polymorphic operations' stamp: 'LT 4/22/2022 16:18:16'!
-restToFraction: aFractionSubtrahend 
-	
-	| newNumerator newDenominator |
-	
-	newNumerator := (denominator * aFractionSubtrahend numerator) - (numerator * aFractionSubtrahend denominator).
-	newDenominator := denominator * aFractionSubtrahend denominator.
-		
-	^newNumerator / newDenominator 
-
-	
-	
-! !
-
-!Fraccion methodsFor: 'polymorphic operations' stamp: 'LT 4/22/2022 15:51:39'!
-restToInteger: anIntegerSubtrahend 
-
-	^Fraccion with: (anIntegerSubtrahend value * denominator - numerator) over: denominator
 	! !
 
 !Fraccion methodsFor: 'polymorphic operations' stamp: 'LT 4/22/2022 16:15:13'!
