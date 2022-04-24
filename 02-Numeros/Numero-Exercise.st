@@ -453,18 +453,10 @@ sumToInteger: anIntegerAdder
 	
 	^self class with: value // aDivisor integerValue! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HAW 9/24/2018 08:47:50'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'LT 4/24/2022 02:37:08'!
 fibonacci
-
-	| one two |
 	
-	one := Entero with: 1.
-	two := Entero with: 2.
-	
-	self isNegative ifTrue: [self error: Entero negativeFibonacciErrorDescription ].	
-	(self isZero or: [self isOne]) ifTrue: [^one].
-	
-	^ (self - one) fibonacci + (self - two) fibonacci
+	^ self subclassResponsibility.
 		! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:00'!
@@ -529,13 +521,133 @@ Entero class
 negativeFibonacciErrorDescription
 	^ ' Fibonacci no está definido aquí para Enteros Negativos!!!!!!'! !
 
-!Entero class methodsFor: 'instance creation' stamp: 'HernanWilkinson 5/7/2016 22:53'!
+!Entero class methodsFor: 'instance creation' stamp: 'LT 4/24/2022 02:23:28'!
+valueInRangeOfSubclass: aValue 
+
+	^ self subclassResponsibility.
+	
+	! !
+
+!Entero class methodsFor: 'instance creation' stamp: 'LT 4/24/2022 02:21:38'!
 with: aValue 
 	
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
 	
-	^self new initalizeWith: aValue! !
+	^(Entero subclasses
+		detect: [:aSubclass | aSubclass valueInRangeOfSubclass: aValue]
+		ifNone: [self error: 'No se pudo inicializar un Entero con ese valor']) new initalizeWith: aValue.
+	
+	! !
+
+
+!classDefinition: #Cero category: 'Numero-Exercise'!
+Entero subclass: #Cero
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!Cero methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:36:03'!
+fibonacci
+
+	| one |
+	
+	one := Entero with: 1.
+
+	^ one.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Cero class' category: 'Numero-Exercise'!
+Cero class
+	instanceVariableNames: ''!
+
+!Cero class methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:25:43'!
+valueInRangeOfSubclass: aValue 
+
+	^ aValue = 0.! !
+
+
+!classDefinition: #EnterosMayoresAUno category: 'Numero-Exercise'!
+Entero subclass: #EnterosMayoresAUno
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!EnterosMayoresAUno methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:36:16'!
+fibonacci
+
+	| one two |
+	
+	one := Entero with: 1.
+	two := Entero with: 2.
+	
+	^ (self - one) fibonacci + (self - two) fibonacci! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'EnterosMayoresAUno class' category: 'Numero-Exercise'!
+EnterosMayoresAUno class
+	instanceVariableNames: ''!
+
+!EnterosMayoresAUno class methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:27:04'!
+valueInRangeOfSubclass: aValue 
+
+	^ aValue > 1.! !
+
+
+!classDefinition: #EnterosNegativos category: 'Numero-Exercise'!
+Entero subclass: #EnterosNegativos
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!EnterosNegativos methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:36:28'!
+fibonacci
+
+	^ self isNegative ifTrue: [self error: Entero negativeFibonacciErrorDescription ].	! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'EnterosNegativos class' category: 'Numero-Exercise'!
+EnterosNegativos class
+	instanceVariableNames: ''!
+
+!EnterosNegativos class methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:27:45'!
+valueInRangeOfSubclass: aValue 
+
+	^ aValue < 0.! !
+
+
+!classDefinition: #Uno category: 'Numero-Exercise'!
+Entero subclass: #Uno
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!Uno methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:36:39'!
+fibonacci
+
+	| one |
+	
+	one := Entero with: 1.
+
+	^ one.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Uno class' category: 'Numero-Exercise'!
+Uno class
+	instanceVariableNames: ''!
+
+!Uno class methodsFor: 'as yet unclassified' stamp: 'LT 4/24/2022 02:27:31'!
+valueInRangeOfSubclass: aValue 
+
+	^ aValue = 1.! !
 
 
 !classDefinition: #Fraccion category: 'Numero-Exercise'!
