@@ -144,7 +144,7 @@ TestCase subclass: #SentenceFinderByPrefixTest
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefixTest methodsFor: 'instance return collection' stamp: 'EE 4/27/2022 19:54:25'!
+!SentenceFinderByPrefixTest methodsFor: 'instance collection' stamp: 'EE 4/27/2022 19:54:25'!
 collectionWithMultipleSentences
 
 	| collection | 
@@ -157,7 +157,7 @@ collectionWithMultipleSentences
 	
 	^collection! !
 
-!SentenceFinderByPrefixTest methodsFor: 'instance return collection' stamp: 'EE 4/27/2022 19:50:28'!
+!SentenceFinderByPrefixTest methodsFor: 'instance collection' stamp: 'EE 4/27/2022 19:50:28'!
 collectionWithOneSentence
 
 	| collection | 
@@ -191,7 +191,7 @@ stackWithMultipleSentences
 	^stack! !
 
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:41:09'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:55:51'!
 test01SearchInEmptyStackShouldReturnZeroValues
 
 	| stack sentenceFinder|
@@ -199,10 +199,10 @@ test01SearchInEmptyStackShouldReturnZeroValues
 	stack := OOStack new.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value size equals: 0.
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Borges'] value size equals: 0.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:41:21'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:55:57'!
 test02SearchInNonEmptyStackWithNoMatchesShouldReturnZeroValues
 
 	| stack sentenceFinder|
@@ -210,9 +210,9 @@ test02SearchInNonEmptyStackWithNoMatchesShouldReturnZeroValues
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'] value size equals: 0.! !
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Paulo Coelho'] value size equals: 0.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:41:32'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:02'!
 test03SearchInNonEmptyStackWithOneMatchShouldReturnOneValue
 
 	| stack sentenceFinder|
@@ -220,10 +220,10 @@ test03SearchInNonEmptyStackWithOneMatchShouldReturnOneValue
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value size equals: 1.
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Mirar el río'] value size equals: 1.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:40:38'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:07'!
 test04SearchInNonEmptyStackWithTwoMatchesShouldTwoValues
 
 	| stack sentenceFinder|
@@ -231,38 +231,42 @@ test04SearchInNonEmptyStackWithTwoMatchesShouldTwoValues
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value size equals: 2.
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Borges'] value size equals: 2.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:29:11'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:12'!
 test05SearchInNonEmptyStackWithMatchesDoesntModifyTheStack
 
-	| stack sentenceFinder|
+	| stack controlStack sentenceFinder|
 	
 	stack := self stackWithMultipleSentences.
+	controlStack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'.
+	sentenceFinder findSentencesInStack: stack withPrefix: 'Borges'.
 	
-	self assert: stack equals: (self stackWithMultipleSentences)
+	self assert: (stack size) equals: (controlStack size).
+	
+	[controlStack isEmpty] 
+	whileFalse:[ self assert: stack pop equals: controlStack pop. ].! !
 
-	! !
-
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:30:00'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:19'!
 test06SearchInNonEmptyStackWithoutMatchesDoesntModifyTheStack
 
-	| stack sentenceFinder|
+	| stack controlStack sentenceFinder|
 	
 	stack := self stackWithMultipleSentences.
+	controlStack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'.
+	sentenceFinder findSentencesInStack: stack withPrefix: 'Paulo Coelho'.
 	
-	self assert: stack equals: (self stackWithMultipleSentences)
+	self assert: (stack size) equals: (controlStack size).
+	
+	[controlStack isEmpty] 
+	whileFalse:[ self assert: stack pop equals: controlStack pop. ].! !
 
-	! !
-
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:34:11'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:26'!
 test07SearchInEmptyStackShouldReturnEmptyCollection
 
 	| stack sentenceFinder|
@@ -270,11 +274,11 @@ test07SearchInEmptyStackShouldReturnEmptyCollection
 	stack := OOStack new.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Mirar el río'] value
 		equals: OrderedCollection new.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:35:09'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:31'!
 test08SearchInNonEmptyStackWithOneMatchShouldReturnACollectionWithOneSentence
 
 	| stack sentenceFinder|
@@ -282,11 +286,11 @@ test08SearchInNonEmptyStackWithOneMatchShouldReturnACollectionWithOneSentence
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Mirar el río'] value
 		equals: self collectionWithOneSentence.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:38:19'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:39'!
 test09SearchInNonEmptyStackWithNoMatchesShouldReturnEmptyCollection
 
 	| stack sentenceFinder|
@@ -294,10 +298,10 @@ test09SearchInNonEmptyStackWithNoMatchesShouldReturnEmptyCollection
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'] value
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Paulo Coelho'] value
 		equals: OrderedCollection new.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:40:55'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:44'!
 test10SearchInNonEmptyStackWithMultipleMatchesShouldReturnACollectionWithMultipleSentences
 
 	| stack sentenceFinder|
@@ -305,7 +309,7 @@ test10SearchInNonEmptyStackWithMultipleMatchesShouldReturnACollectionWithMultipl
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value
+	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Borges'] value
 		equals: self collectionWithMultipleSentences.
 	! !
 
@@ -317,20 +321,20 @@ Object subclass: #OOStack
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStack methodsFor: 'modifying' stamp: 'LT 4/27/2022 02:38:38'!
+!OOStack methodsFor: 'modifying' stamp: 'LT 4/28/2022 00:53:44'!
 pop
 
 	|popedElement|
 	
 	popedElement := topElement value.
-	topElement := topElement pop.
+	topElement := topElement unstack.
 
 	^popedElement! !
 
-!OOStack methodsFor: 'modifying' stamp: 'LT 4/27/2022 02:43:04'!
+!OOStack methodsFor: 'modifying' stamp: 'LT 4/28/2022 00:53:53'!
 push: anElement
 
-	topElement := topElement push: anElement! !
+	topElement := topElement stack: anElement! !
 
 
 !OOStack methodsFor: 'testing' stamp: 'EE 4/27/2022 18:22:43'!
@@ -377,8 +381,8 @@ Object subclass: #SentenceFinderByPrefix
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefix methodsFor: 'searching in stacks' stamp: 'EE 4/27/2022 21:18:06'!
-findSentencesinStack: aStack withPrefix: aPrefix
+!SentenceFinderByPrefix methodsFor: 'searching in stacks' stamp: 'LT 4/28/2022 00:55:22'!
+findSentencesInStack: aStack withPrefix: aPrefix
 
 	| stackForRestoring |
 	
@@ -418,21 +422,26 @@ Object subclass: #StackElements
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
+!StackElements methodsFor: 'testing' stamp: 'LT 4/27/2022 23:21:53'!
+height
+
+	self subclassResponsibility! !
+
 !StackElements methodsFor: 'testing' stamp: 'EE 4/27/2022 18:22:16'!
 isBase
 
 	self subclassResponsibility! !
 
 
-!StackElements methodsFor: 'stacking' stamp: 'EE 4/27/2022 19:13:26'!
-pop
-
-	self subclassResponsibility! !
-
-!StackElements methodsFor: 'stacking' stamp: 'EE 4/27/2022 19:12:18'!
-push: anElement
+!StackElements methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:51:40'!
+stack: anElement
 
 	^ StackedElement new initializeWith: anElement overElement: self! !
+
+!StackElements methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:51:29'!
+unstack
+
+	self subclassResponsibility! !
 
 
 !StackElements methodsFor: 'accessing' stamp: 'EE 4/27/2022 19:15:03'!
@@ -448,22 +457,22 @@ StackElements subclass: #BaseElement
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!BaseElement methodsFor: 'stacking' stamp: 'EE 4/27/2022 19:13:38'!
-pop
+!BaseElement methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:53:06'!
+unstack
 
 	^ self error: OOStack stackEmptyErrorDescription ! !
 
-
-!BaseElement methodsFor: 'accessing' stamp: 'LT 4/27/2022 02:12:56'!
-height
-
-	^ 0! !
 
 !BaseElement methodsFor: 'accessing' stamp: 'LT 4/27/2022 02:28:16'!
 value
 
 	^ self error: OOStack stackEmptyErrorDescription ! !
 
+
+!BaseElement methodsFor: 'testing' stamp: 'LT 4/27/2022 02:12:56'!
+height
+
+	^ 0! !
 
 !BaseElement methodsFor: 'testing' stamp: 'EE 4/27/2022 18:22:24'!
 isBase
@@ -486,22 +495,22 @@ initializeWith: aValue overElement: aStackElementBelow
 	height := (aStackElementBelow height) + 1.! !
 
 
+!StackedElement methodsFor: 'testing' stamp: 'LT 4/27/2022 02:11:55'!
+height
+
+	^ height! !
+
 !StackedElement methodsFor: 'testing' stamp: 'EE 4/27/2022 18:22:31'!
 isBase
 
 	^ false! !
 
 
-!StackedElement methodsFor: 'stacking' stamp: 'EE 4/27/2022 18:30:03'!
-pop
+!StackedElement methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:53:24'!
+unstack
 
 	^ elementBelow! !
 
-
-!StackedElement methodsFor: 'accessing' stamp: 'LT 4/27/2022 02:11:55'!
-height
-
-	^ height! !
 
 !StackedElement methodsFor: 'accessing' stamp: 'EE 4/27/2022 18:27:44'!
 value
