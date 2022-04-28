@@ -191,6 +191,19 @@ stackWithMultipleSentences
 	^stack! !
 
 
+!SentenceFinderByPrefixTest methodsFor: 'auxiliaries' stamp: 'EE 4/28/2022 15:14:43'!
+assertStackisEqualToStackWithMultipleSentences: stack
+
+	| controlStack |
+	
+	controlStack := self stackWithMultipleSentences.
+	
+	self assert: (stack size) equals: (controlStack size).
+	
+	[controlStack isEmpty] 
+	whileFalse:[ self assert: stack pop equals: controlStack pop. ].! !
+
+
 !SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:55:51'!
 test01SearchInEmptyStackShouldReturnZeroValues
 
@@ -234,37 +247,29 @@ test04SearchInNonEmptyStackWithTwoMatchesShouldTwoValues
 	self assert: [sentenceFinder findSentencesInStack: stack withPrefix: 'Borges'] value size equals: 2.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:12'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/28/2022 15:14:33'!
 test05SearchInNonEmptyStackWithMatchesDoesntModifyTheStack
 
-	| stack controlStack sentenceFinder|
+	| stack sentenceFinder|
 	
 	stack := self stackWithMultipleSentences.
-	controlStack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
 	sentenceFinder findSentencesInStack: stack withPrefix: 'Borges'.
 	
-	self assert: (stack size) equals: (controlStack size).
-	
-	[controlStack isEmpty] 
-	whileFalse:[ self assert: stack pop equals: controlStack pop. ].! !
+	self assertStackisEqualToStackWithMultipleSentences: stack! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:19'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/28/2022 15:15:20'!
 test06SearchInNonEmptyStackWithoutMatchesDoesntModifyTheStack
 
-	| stack controlStack sentenceFinder|
+	| stack sentenceFinder|
 	
 	stack := self stackWithMultipleSentences.
-	controlStack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
 	sentenceFinder findSentencesInStack: stack withPrefix: 'Paulo Coelho'.
 	
-	self assert: (stack size) equals: (controlStack size).
-	
-	[controlStack isEmpty] 
-	whileFalse:[ self assert: stack pop equals: controlStack pop. ].! !
+	self assertStackisEqualToStackWithMultipleSentences: stack! !
 
 !SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'LT 4/28/2022 00:56:26'!
 test07SearchInEmptyStackShouldReturnEmptyCollection
@@ -415,43 +420,43 @@ initialize
 	sentences := OrderedCollection new.! !
 
 
-!classDefinition: #StackElements category: 'Stack-Exercise'!
-Object subclass: #StackElements
+!classDefinition: #StackElement category: 'Stack-Exercise'!
+Object subclass: #StackElement
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!StackElements methodsFor: 'testing' stamp: 'LT 4/27/2022 23:21:53'!
+!StackElement methodsFor: 'testing' stamp: 'LT 4/27/2022 23:21:53'!
 height
 
 	self subclassResponsibility! !
 
-!StackElements methodsFor: 'testing' stamp: 'EE 4/27/2022 18:22:16'!
+!StackElement methodsFor: 'testing' stamp: 'EE 4/27/2022 18:22:16'!
 isBase
 
 	self subclassResponsibility! !
 
 
-!StackElements methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:51:40'!
+!StackElement methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:51:40'!
 stack: anElement
 
 	^ StackedElement new initializeWith: anElement overElement: self! !
 
-!StackElements methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:51:29'!
+!StackElement methodsFor: 'stacking' stamp: 'LT 4/28/2022 00:51:29'!
 unstack
 
 	self subclassResponsibility! !
 
 
-!StackElements methodsFor: 'accessing' stamp: 'EE 4/27/2022 19:15:03'!
+!StackElement methodsFor: 'accessing' stamp: 'EE 4/27/2022 19:15:03'!
 value
 
 	self subclassResponsibility! !
 
 
 !classDefinition: #BaseElement category: 'Stack-Exercise'!
-StackElements subclass: #BaseElement
+StackElement subclass: #BaseElement
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -481,7 +486,7 @@ isBase
 
 
 !classDefinition: #StackedElement category: 'Stack-Exercise'!
-StackElements subclass: #StackedElement
+StackElement subclass: #StackedElement
 	instanceVariableNames: 'elementBelow height myValue'
 	classVariableNames: ''
 	poolDictionaries: ''
