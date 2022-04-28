@@ -237,7 +237,7 @@ test04SearchInNonEmptyStackWithMultipleMatchesShouldReturnACollectionWithMultipl
 		equals: self collectionWithMultipleSentences.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 19:58:53'!
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:22:31'!
 test05SearchInNonEmptyStackDoesntModifyTheStack
 
 	| stack sentenceFinder|
@@ -247,7 +247,7 @@ test05SearchInNonEmptyStackDoesntModifyTheStack
 	
 	sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'.
 	
-	self assert: stack equals: self stackWithMultipleSentences
+	self assert: stack equals: (self stackWithMultipleSentences)
 
 	! !
 
@@ -319,19 +319,30 @@ Object subclass: #SentenceFinderByPrefix
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefix methodsFor: 'searching in stacks' stamp: 'EE 4/27/2022 19:29:05'!
+!SentenceFinderByPrefix methodsFor: 'searching in stacks' stamp: 'EE 4/27/2022 21:18:06'!
 findSentencesinStack: aStack withPrefix: aPrefix
 
-	| stackCopy |
+	| stackForRestoring |
 	
-	stackCopy := aStack.
+	stackForRestoring := OOStack new.
 	
-	[stackCopy isEmpty] 
-		whileFalse: [(stackCopy top beginsWith: aPrefix)
-								ifTrue: [sentences add: stackCopy top].
-								stackCopy pop.].
+	[aStack isEmpty] 
+		whileFalse: [(aStack top beginsWith: aPrefix)
+								ifTrue: [sentences add: aStack top].
+								stackForRestoring push: aStack pop].
+							
+	self restoreStack: aStack toBeforeSearchWith: stackForRestoring.
 	
 	^sentences 
+
+	! !
+
+!SentenceFinderByPrefix methodsFor: 'searching in stacks' stamp: 'EE 4/27/2022 21:20:41'!
+restoreStack: aStack toBeforeSearchWith: stackForRestoring
+
+	[stackForRestoring isEmpty] 
+		whileFalse: [aStack push: stackForRestoring pop].
+
 
 	! !
 
