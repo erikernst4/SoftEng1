@@ -191,8 +191,8 @@ stackWithMultipleSentences
 	^stack! !
 
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 19:27:32'!
-test01SearchInEmptyStackShouldReturnEmptyCollection
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:41:09'!
+test01SearchInEmptyStackShouldReturnZeroValues
 
 	| stack sentenceFinder|
 	
@@ -202,43 +202,40 @@ test01SearchInEmptyStackShouldReturnEmptyCollection
 	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value size equals: 0.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 19:43:20'!
-test02SearchInNonEmptyStackWithNoMatchesShouldReturnEmptyCollection
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:41:21'!
+test02SearchInNonEmptyStackWithNoMatchesShouldReturnZeroValues
 
 	| stack sentenceFinder|
 	
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'] value size equals: 0.
-	! !
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'] value size equals: 0.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 19:52:40'!
-test03SearchInNonEmptyStackWithOneMatchShouldReturnACollectionWithOneSentence
-
-	| stack sentenceFinder|
-	
-	stack := self stackWithMultipleSentences.
-	sentenceFinder := SentenceFinderByPrefix new.
-	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value
-		equals: self collectionWithOneSentence.
-	! !
-
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 19:54:41'!
-test04SearchInNonEmptyStackWithMultipleMatchesShouldReturnACollectionWithMultipleSentences
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:41:32'!
+test03SearchInNonEmptyStackWithOneMatchShouldReturnOneValue
 
 	| stack sentenceFinder|
 	
 	stack := self stackWithMultipleSentences.
 	sentenceFinder := SentenceFinderByPrefix new.
 	
-	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value
-		equals: self collectionWithMultipleSentences.
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value size equals: 1.
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:22:31'!
-test05SearchInNonEmptyStackDoesntModifyTheStack
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:40:38'!
+test04SearchInNonEmptyStackWithTwoMatchesShouldTwoValues
+
+	| stack sentenceFinder|
+	
+	stack := self stackWithMultipleSentences.
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value size equals: 2.
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:29:11'!
+test05SearchInNonEmptyStackWithMatchesDoesntModifyTheStack
 
 	| stack sentenceFinder|
 	
@@ -249,6 +246,67 @@ test05SearchInNonEmptyStackDoesntModifyTheStack
 	
 	self assert: stack equals: (self stackWithMultipleSentences)
 
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:30:00'!
+test06SearchInNonEmptyStackWithoutMatchesDoesntModifyTheStack
+
+	| stack sentenceFinder|
+	
+	stack := self stackWithMultipleSentences.
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'.
+	
+	self assert: stack equals: (self stackWithMultipleSentences)
+
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:34:11'!
+test07SearchInEmptyStackShouldReturnEmptyCollection
+
+	| stack sentenceFinder|
+	
+	stack := OOStack new.
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value
+		equals: OrderedCollection new.
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:35:09'!
+test08SearchInNonEmptyStackWithOneMatchShouldReturnACollectionWithOneSentence
+
+	| stack sentenceFinder|
+	
+	stack := self stackWithMultipleSentences.
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'mirar el río'] value
+		equals: self collectionWithOneSentence.
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:38:19'!
+test09SearchInNonEmptyStackWithNoMatchesShouldReturnEmptyCollection
+
+	| stack sentenceFinder|
+	
+	stack := self stackWithMultipleSentences.
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Paulo Coelho'] value
+		equals: OrderedCollection new.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test in stacks' stamp: 'EE 4/27/2022 21:40:55'!
+test10SearchInNonEmptyStackWithMultipleMatchesShouldReturnACollectionWithMultipleSentences
+
+	| stack sentenceFinder|
+	
+	stack := self stackWithMultipleSentences.
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	self assert: [sentenceFinder findSentencesinStack: stack withPrefix: 'Borges'] value
+		equals: self collectionWithMultipleSentences.
 	! !
 
 
