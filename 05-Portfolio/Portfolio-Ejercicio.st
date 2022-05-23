@@ -539,12 +539,13 @@ transactions
 	^unionOfTransactions! !
 
 
-!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 01:08:15'!
-assertCanAdd: anAccountOrPortfolioToAdd
+!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 14:12:01'!
+canAdd: anAccountOrPortfolioToAdd
 	
 	accountsAndPortfolios do: [ :anAccountOrPortfolio |
 		
 		anAccountOrPortfolio assertIfCantBeAdded: anAccountOrPortfolioToAdd.
+		"Cant add: This account or portfolio is already added in the portfolio or in a child portfolio"
 		
 	].
 
@@ -556,37 +557,20 @@ assertCanAdd: anAccountOrPortfolioToAdd
 	
 	^true! !
 
-!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 00:17:54'!
-assertChildsCanBeAddedToPortfolio: aPortfolio
-
-	accountsAndPortfolios do: [ : anAccountOrPortfolio |
-		
-		aPortfolio assertCanAdd: anAccountOrPortfolio.
-		
-		].! !
-
-!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 01:09:20'!
-assertFatherCantAdd: anAccountOrPortfolioToAdd
+!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 14:14:21'!
+fatherCantAdd: anAccountOrPortfolioToAdd
 
 	parentsPortfolios ifEmpty: [
 	
-		^ ((self assertCanAdd: anAccountOrPortfolioToAdd) not).
+		^ ((self canAdd: anAccountOrPortfolioToAdd) not).
 		
 	].
 	
 	^ parentsPortfolios anySatisfy: [ :aPortfolio |
 		
-		(aPortfolio assertFatherCantAdd: anAccountOrPortfolioToAdd).
+		(aPortfolio fatherCantAdd: anAccountOrPortfolioToAdd).
 		
 	].	! !
-
-!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 00:44:47'!
-assertIfCantBeAdded: anAccountOrPortfolioToAdd
-
-	((self = anAccountOrPortfolioToAdd) or: 
-	[(self assertCanAdd: anAccountOrPortfolioToAdd) not]) ifTrue: [
-			self class cantAddDuplicates.
-	].! !
 
 !Portfolio methodsFor: 'testing' stamp: 'EE 5/19/2022 20:52:49'!
 hasRegistered: anAccountTransaction 
@@ -607,22 +591,38 @@ initialize
 	parentsPortfolios := OrderedCollection new.! !
 
 
-!Portfolio methodsFor: 'adding' stamp: 'LT 5/23/2022 01:08:40'!
+!Portfolio methodsFor: 'assertions' stamp: 'LT 5/23/2022 14:12:01'!
+assertChildsCanBeAddedToPortfolio: aPortfolio
+
+	accountsAndPortfolios do: [ : anAccountOrPortfolio |
+		
+		aPortfolio canAdd: anAccountOrPortfolio.
+		
+		].! !
+
+!Portfolio methodsFor: 'assertions' stamp: 'LT 5/23/2022 14:37:46'!
+assertIfCantBeAdded: anAccountOrPortfolioToAdd
+
+	((self = anAccountOrPortfolioToAdd) or: 
+	[(self canAdd: anAccountOrPortfolioToAdd) not]) ifTrue: [
+			self class cantAddDuplicatesError.
+	].! !
+
+
+!Portfolio methodsFor: 'adding' stamp: 'LT 5/23/2022 14:51:26'!
 add: anAccountOrPortfolio
 
-	self assertCanAdd: anAccountOrPortfolio.
+	self canAdd: anAccountOrPortfolio.
 	
-	(self assertFatherCantAdd: anAccountOrPortfolio) ifTrue: [
-			self class cantAddDuplicates.			
-			"CAMBIAR EL MENSAJE DE ERROR"	
-			"Cant add: a father already had that bank account"
+	(self fatherCantAdd: anAccountOrPortfolio) ifTrue: [
+		self class cantAddDuplicatesError.			
 	].
 	
 	accountsAndPortfolios add: anAccountOrPortfolio.
 	
 	(anAccountOrPortfolio isKindOf: Portfolio) ifTrue: [
 		anAccountOrPortfolio addFather: self.
-		].! !
+	].! !
 
 !Portfolio methodsFor: 'adding' stamp: 'LT 5/23/2022 00:32:03'!
 addFather: aPortfolio
@@ -635,15 +635,16 @@ addFather: aPortfolio
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'error messages' stamp: 'LT 5/23/2022 00:09:26'!
-cantAddDuplicates
+!Portfolio class methodsFor: 'errors' stamp: 'LT 5/23/2022 14:37:46'!
+cantAddDuplicatesError
 	
 	self error: (self cantAddDuplicatesMessage).! !
 
-!Portfolio class methodsFor: 'error messages' stamp: 'LT 5/23/2022 00:09:12'!
+
+!Portfolio class methodsFor: 'messages' stamp: 'LT 5/23/2022 14:52:00'!
 cantAddDuplicatesMessage
 	
-	^ 'Cant add duplicates'! !
+	^ 'The account or portfolio cant be added'! !
 
 
 !classDefinition: #ReceptiveAccount category: 'Portfolio-Ejercicio'!
@@ -683,15 +684,16 @@ balance
 	^balance! !
 
 
-!ReceptiveAccount methodsFor: 'testing' stamp: 'LT 5/23/2022 00:09:54'!
-assertIfCantBeAdded: anAccountOrPortfolioToAdd
-
-	(self = anAccountOrPortfolioToAdd) ifTrue: [
-			Portfolio cantAddDuplicates.
-		].! !
-
 !ReceptiveAccount methodsFor: 'testing' stamp: 'NR 10/17/2019 03:28:43'!
 hasRegistered: aTransaction
 
 	^ transactions includes: aTransaction 
 ! !
+
+
+!ReceptiveAccount methodsFor: 'assertions' stamp: 'LT 5/23/2022 14:47:13'!
+assertIfCantBeAdded: anAccountOrPortfolioToAdd
+
+	(self = anAccountOrPortfolioToAdd) ifTrue: [
+			Portfolio cantAddDuplicatesError.
+		].! !
