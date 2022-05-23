@@ -227,8 +227,8 @@ test13PortfolioWithMultipleAccountsAndPortfolioWithAccountsTransactionsAreTheUni
 	
 	! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/22/2022 21:17:28'!
-test14PortfolioCantAddAnAccountMoreThanOneTime
+!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/22/2022 23:11:53'!
+test14PortfolioCantAddAnAccountOrAPortfolioMoreThanOneTime
 
 	| portfolio account |
 	
@@ -239,22 +239,58 @@ test14PortfolioCantAddAnAccountMoreThanOneTime
 	
 	self should: [portfolio add: account.] 
 			raise: Error
-			withExceptionDo: [:anError | self assert: anError messageText equals: Portfolio cantAddDuplicates.].
+			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
 ! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 21:49:35'!
-test15PortfolioCantAddAPortfolioMoreThanOneTime
+!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/22/2022 23:48:33'!
+test15PortfolioCantAddAnAccountOrAPortfolioMoreThanOneTimeTwoOrMoreLevelsDown
 
-	| portfolio portfolio2 |
+	| portfolio account portfolioSon |
 	
 	portfolio := Portfolio new.
-	portfolio2 := Portfolio new.
-
-	portfolio add: portfolio2.
+	portfolioSon := Portfolio new.
+	account := ReceptiveAccount  new.
 	
-	[portfolio add: portfolio2. self fail] 
-			on: Error
-			do: [:anError | self assert: anError equals: Portfolio cantAddDuplicates.].
+	portfolio add: portfolioSon.
+	portfolioSon add: account.
+	
+	self should: [portfolio add: account.] 
+			raise: Error
+			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
+! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/23/2022 00:12:20'!
+test16PortfolioCantAddAPortfolioWithAnAccountOrPortfolioThatTheFirstPortfolioAlreadyHad
+
+	| portfolio account portfolioSon |
+	
+	portfolio := Portfolio new.
+	portfolioSon := Portfolio new.
+	account := ReceptiveAccount  new.
+	
+	portfolio add: account.
+	portfolioSon add: account.
+	
+	self should: [portfolio add: portfolioSon.] 
+			raise: Error
+			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
+! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/23/2022 00:23:38'!
+test17PortfolioCantAddAnAccountWhenAParentPortfolioAlreadyHadIt
+
+	| portfolio portfolioSon account |
+	
+	portfolio := Portfolio new.
+	account := ReceptiveAccount  new.
+	portfolio add: account.
+	
+	portfolioSon := Portfolio new.
+	portfolio add: portfolioSon.
+	
+	self should: [portfolioSon add: account.] 
+			raise: Error
+			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
 ! !
 
 
@@ -450,9 +486,37 @@ for: aValue
 	^ self new initializeFor: aValue ! !
 
 
+!classDefinition: #BankAccount category: 'Portfolio-Ejercicio'!
+Object subclass: #BankAccount
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio-Ejercicio'!
+
+!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/23/2022 00:00:11'!
+assertIfCantBeAdded: anAccountOrPortfolioToAdd
+
+	self subclassResponsibility ! !
+
+!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/22/2022 23:02:44'!
+balance
+
+	self subclassResponsibility ! !
+
+!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/22/2022 23:02:59'!
+hasRegistered: aTransaction
+
+	self subclassResponsibility ! !
+
+!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/22/2022 23:03:35'!
+transactions
+
+	self subclassResponsibility ! !
+
+
 !classDefinition: #Portfolio category: 'Portfolio-Ejercicio'!
-Object subclass: #Portfolio
-	instanceVariableNames: 'accountsAndPortfolios'
+BankAccount subclass: #Portfolio
+	instanceVariableNames: 'accountsAndPortfolios parentsPortfolios'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
@@ -475,11 +539,54 @@ transactions
 	^unionOfTransactions! !
 
 
-!Portfolio methodsFor: 'testing' stamp: 'EE 5/22/2022 21:21:20'!
+!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 01:08:15'!
 assertCanAdd: anAccountOrPortfolioToAdd
+	
+	accountsAndPortfolios do: [ :anAccountOrPortfolio |
+		
+		anAccountOrPortfolio assertIfCantBeAdded: anAccountOrPortfolioToAdd.
+		
+	].
 
-	(accountsAndPortfolios includes: anAccountOrPortfolioToAdd) ifTrue: [self class cantAddDuplicates].
-	! !
+	(anAccountOrPortfolioToAdd isKindOf: Portfolio) ifTrue: [
+		
+		anAccountOrPortfolioToAdd assertChildsCanBeAddedToPortfolio: self.	
+		
+	].
+	
+	^true! !
+
+!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 00:17:54'!
+assertChildsCanBeAddedToPortfolio: aPortfolio
+
+	accountsAndPortfolios do: [ : anAccountOrPortfolio |
+		
+		aPortfolio assertCanAdd: anAccountOrPortfolio.
+		
+		].! !
+
+!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 01:09:20'!
+assertFatherCantAdd: anAccountOrPortfolioToAdd
+
+	parentsPortfolios ifEmpty: [
+	
+		^ ((self assertCanAdd: anAccountOrPortfolioToAdd) not).
+		
+	].
+	
+	^ parentsPortfolios anySatisfy: [ :aPortfolio |
+		
+		(aPortfolio assertFatherCantAdd: anAccountOrPortfolioToAdd).
+		
+	].	! !
+
+!Portfolio methodsFor: 'testing' stamp: 'LT 5/23/2022 00:44:47'!
+assertIfCantBeAdded: anAccountOrPortfolioToAdd
+
+	((self = anAccountOrPortfolioToAdd) or: 
+	[(self assertCanAdd: anAccountOrPortfolioToAdd) not]) ifTrue: [
+			self class cantAddDuplicates.
+	].! !
 
 !Portfolio methodsFor: 'testing' stamp: 'EE 5/19/2022 20:52:49'!
 hasRegistered: anAccountTransaction 
@@ -493,18 +600,34 @@ hasRegistered: anAccountTransaction
 	^ hasRegisterTransaction! !
 
 
-!Portfolio methodsFor: 'initialization' stamp: 'EE 5/19/2022 20:54:11'!
+!Portfolio methodsFor: 'initialization' stamp: 'LT 5/23/2022 00:31:05'!
 initialize
 
-	accountsAndPortfolios := OrderedCollection new.! !
+	accountsAndPortfolios := OrderedCollection new.
+	parentsPortfolios := OrderedCollection new.! !
 
 
-!Portfolio methodsFor: 'adding' stamp: 'EE 5/19/2022 21:37:02'!
+!Portfolio methodsFor: 'adding' stamp: 'LT 5/23/2022 01:08:40'!
 add: anAccountOrPortfolio
 
 	self assertCanAdd: anAccountOrPortfolio.
 	
-	accountsAndPortfolios add: anAccountOrPortfolio.! !
+	(self assertFatherCantAdd: anAccountOrPortfolio) ifTrue: [
+			self class cantAddDuplicates.			
+			"CAMBIAR EL MENSAJE DE ERROR"	
+			"Cant add: a father already had that bank account"
+	].
+	
+	accountsAndPortfolios add: anAccountOrPortfolio.
+	
+	(anAccountOrPortfolio isKindOf: Portfolio) ifTrue: [
+		anAccountOrPortfolio addFather: self.
+		].! !
+
+!Portfolio methodsFor: 'adding' stamp: 'LT 5/23/2022 00:32:03'!
+addFather: aPortfolio
+
+	parentsPortfolios add: aPortfolio.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -512,14 +635,19 @@ add: anAccountOrPortfolio
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'error messages' stamp: 'EE 5/19/2022 21:44:10'!
+!Portfolio class methodsFor: 'error messages' stamp: 'LT 5/23/2022 00:09:26'!
 cantAddDuplicates
 	
-	self error: 'Cant add duplicates'! !
+	self error: (self cantAddDuplicatesMessage).! !
+
+!Portfolio class methodsFor: 'error messages' stamp: 'LT 5/23/2022 00:09:12'!
+cantAddDuplicatesMessage
+	
+	^ 'Cant add duplicates'! !
 
 
 !classDefinition: #ReceptiveAccount category: 'Portfolio-Ejercicio'!
-Object subclass: #ReceptiveAccount
+BankAccount subclass: #ReceptiveAccount
 	instanceVariableNames: 'transactions'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -554,6 +682,13 @@ balance
 	
 	^balance! !
 
+
+!ReceptiveAccount methodsFor: 'testing' stamp: 'LT 5/23/2022 00:09:54'!
+assertIfCantBeAdded: anAccountOrPortfolioToAdd
+
+	(self = anAccountOrPortfolioToAdd) ifTrue: [
+			Portfolio cantAddDuplicates.
+		].! !
 
 !ReceptiveAccount methodsFor: 'testing' stamp: 'NR 10/17/2019 03:28:43'!
 hasRegistered: aTransaction
