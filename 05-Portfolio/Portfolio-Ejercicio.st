@@ -5,6 +5,20 @@ TestCase subclass: #PortfolioTest
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
+!PortfolioTest methodsFor: 'instance creations' stamp: 'EE 5/23/2022 15:17:36'!
+portfolioWithAccountWithDepositRegistered: anAccount 
+
+	| portfolio |
+	
+	portfolio := Portfolio new.
+	
+	portfolio add: anAccount.
+	
+	Deposit register: 100 on: anAccount.
+	
+	^portfolio! !
+
+
 !PortfolioTest methodsFor: 'tests' stamp: 'EE 5/16/2022 20:43:51'!
 test01PortfolioHasZeroAsBalanceWhenCreated 
 
@@ -39,33 +53,25 @@ test03PortfolioHasNotRegisteredTransactionsWhenCreated
 
 ! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:46:37'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:19:31'!
 test04PortfolioBalanceIsEqualToReceptiveAccountWhenIsTheOnlyAccountAdded
 
 	| portfolio account |
 	
-	portfolio := Portfolio new.
 	account := ReceptiveAccount  new.
-	
-	portfolio add: account.
-	
-	Deposit register: 100 on: account.
+	portfolio := self portfolioWithAccountWithDepositRegistered: account.
 	
 	self assert: account balance equals: portfolio balance.	
 ! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:47:01'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:20:50'!
 test05PortfolioBalanceIsEqualToTheSumOfItsAccountsBalances
 
 	| portfolio account account2 |
 	
-	portfolio := Portfolio new.
 	account := ReceptiveAccount  new.
-	
-	portfolio add: account.
-	
-	Deposit register: 100 on: account.
-	
+	portfolio := self portfolioWithAccountWithDepositRegistered: account.
+		
 	account2 := ReceptiveAccount new.
 	portfolio add: account2.
 	Deposit register: 100 on: account2.
@@ -87,55 +93,49 @@ test06PortfolioBalanceIsZeroWhenCreatedAndAddedEmptyPortfolio
 	self assert: portfolio2 balance equals: portfolio balance.	
 ! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:47:53'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:45:58'!
 test07PortfolioBalanceWhenCreatedAndAddedNonEmptyPortfolioIsThisLastPortfolioBalance
 
 	| portfolio portfolio2 account |
 	
 	portfolio := Portfolio new.
-	portfolio2 := Portfolio new.
-	account := ReceptiveAccount  new.
 	
-	portfolio2 add: account.
-	Deposit register: 100 on: account.
+	account := ReceptiveAccount  new.
+	portfolio2 := self portfolioWithAccountWithDepositRegistered: account.
 	
 	portfolio add: portfolio2.
 		
 	self assert: portfolio2 balance equals: portfolio balance.	
 ! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:48:11'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:46:19'!
 test08PortfolioBalanceIsTheSumOfPortfoliosBalanceWhenAddedMultiplePortfoliosAndNotAnyAccount
 
 	| portfolio portfolio2 account account2 portfolio3 |
 	
 	portfolio := Portfolio new.
-	portfolio2 := Portfolio new.
-	account := ReceptiveAccount  new.
 	
-	portfolio2 add: account.
-	Deposit register: 100 on: account.
+	account := ReceptiveAccount  new.
+	portfolio2 := self portfolioWithAccountWithDepositRegistered: account.
 	
 	portfolio add: portfolio2.
-	
-	portfolio3 := Portfolio new.
-	portfolio add: portfolio3.
+
 	account2 := ReceptiveAccount new.
-	portfolio3 add: account2.
-	Deposit register: 100 on: account2.
+	portfolio3 := self portfolioWithAccountWithDepositRegistered: account2.
 	Withdraw register: 50 on: account2.
-		
+	
+	portfolio add: portfolio3.	
+	
 	self assert: (portfolio2 balance + portfolio3 balance) equals: portfolio balance.	
 ! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:48:22'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:27:19'!
 test09PortfolioWithMultipleAccountsAndNonePortfoliosHasRegisteredTheAccountsTransactions
 
 	| portfolio account deposit account2 withdraw |
 	
-	portfolio := Portfolio new.
 	account := ReceptiveAccount  new.
-	
+	portfolio := Portfolio new.
 	portfolio add: account.
 	deposit := Deposit register: 100 on: account.
 	
@@ -181,16 +181,13 @@ test11PortfolioWithOneChildPortfolioWithMultipleAccountsHasRegisterTheChildPortf
 	self assert: (portfolio hasRegistered: deposit).
 	self deny: (portfolio hasRegistered: withdraw).! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:49:13'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:36:04'!
 test12PortfolioWithMultipleAccountsAndNonePortfoliosTransactionsAreTheAccountsTransactions
 
 	| portfolio account account2 unionOfTransactions |
 	
-	portfolio := Portfolio new.
 	account := ReceptiveAccount  new.
-	
-	portfolio add: account.
-	Deposit register: 100 on: account.
+	portfolio := self portfolioWithAccountWithDepositRegistered: account.
 	
 	account2 := ReceptiveAccount  new.
 	portfolio add: account2.
@@ -203,16 +200,13 @@ test12PortfolioWithMultipleAccountsAndNonePortfoliosTransactionsAreTheAccountsTr
 	
 	! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 20:49:27'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:35:52'!
 test13PortfolioWithMultipleAccountsAndPortfolioWithAccountsTransactionsAreTheUnionOfAccountsAndPortfolioTransactions
 
 	| portfolio account account2 unionOfTransactions portfolio2 |
 	
-	portfolio := Portfolio new.
 	account := ReceptiveAccount  new.
-	
-	portfolio add: account.
-	Deposit register: 100 on: account.
+	portfolio := self portfolioWithAccountWithDepositRegistered: account.
 	
 	portfolio2 := Portfolio new.
 	portfolio add: portfolio2.
@@ -227,7 +221,7 @@ test13PortfolioWithMultipleAccountsAndPortfolioWithAccountsTransactionsAreTheUni
 	
 	! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/22/2022 23:11:53'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:33:16'!
 test14PortfolioCantAddAnAccountOrAPortfolioMoreThanOneTime
 
 	| portfolio account |
@@ -237,12 +231,9 @@ test14PortfolioCantAddAnAccountOrAPortfolioMoreThanOneTime
 	
 	portfolio add: account.
 	
-	self should: [portfolio add: account.] 
-			raise: Error
-			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
-! !
+	self assertShouldRaiseCantAddDuplicatesMessageAdding: account on: portfolio.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/22/2022 23:48:33'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:37:11'!
 test15PortfolioCantAddAnAccountOrAPortfolioMoreThanOneTimeTwoOrMoreLevelsDown
 
 	| portfolio account portfolioSon |
@@ -254,12 +245,9 @@ test15PortfolioCantAddAnAccountOrAPortfolioMoreThanOneTimeTwoOrMoreLevelsDown
 	portfolio add: portfolioSon.
 	portfolioSon add: account.
 	
-	self should: [portfolio add: account.] 
-			raise: Error
-			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
-! !
+	self assertShouldRaiseCantAddDuplicatesMessageAdding: account on: portfolio.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/23/2022 00:12:20'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:32:09'!
 test16PortfolioCantAddAPortfolioWithAnAccountOrPortfolioThatTheFirstPortfolioAlreadyHad
 
 	| portfolio account portfolioSon |
@@ -271,12 +259,9 @@ test16PortfolioCantAddAPortfolioWithAnAccountOrPortfolioThatTheFirstPortfolioAlr
 	portfolio add: account.
 	portfolioSon add: account.
 	
-	self should: [portfolio add: portfolioSon.] 
-			raise: Error
-			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
-! !
+	self assertShouldRaiseCantAddDuplicatesMessageAdding: portfolioSon on: portfolio.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LT 5/23/2022 00:23:38'!
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/23/2022 15:31:15'!
 test17PortfolioCantAddAnAccountWhenAParentPortfolioAlreadyHadIt
 
 	| portfolio portfolioSon account |
@@ -288,10 +273,16 @@ test17PortfolioCantAddAnAccountWhenAParentPortfolioAlreadyHadIt
 	portfolioSon := Portfolio new.
 	portfolio add: portfolioSon.
 	
-	self should: [portfolioSon add: account.] 
-			raise: Error
-			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).].
+	self assertShouldRaiseCantAddDuplicatesMessageAdding: account on: portfolioSon.
 ! !
+
+
+!PortfolioTest methodsFor: 'assertions' stamp: 'EE 5/23/2022 15:31:15'!
+assertShouldRaiseCantAddDuplicatesMessageAdding: account on: portfolioSon
+
+	^ self should: [portfolioSon add: account.] 
+			raise: Error
+			withExceptionDo: [:anError | self assert: anError messageText equals: (Portfolio cantAddDuplicatesMessage).]! !
 
 
 !classDefinition: #ReceptiveAccountTest category: 'Portfolio-Ejercicio'!
@@ -493,23 +484,26 @@ Object subclass: #BankAccount
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/23/2022 00:00:11'!
-assertIfCantBeAdded: anAccountOrPortfolioToAdd
-
-	self subclassResponsibility ! !
-
-!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/22/2022 23:02:44'!
-balance
-
-	self subclassResponsibility ! !
-
-!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/22/2022 23:02:59'!
+!BankAccount methodsFor: 'testing' stamp: 'LT 5/22/2022 23:02:59'!
 hasRegistered: aTransaction
 
 	self subclassResponsibility ! !
 
-!BankAccount methodsFor: 'as yet unclassified' stamp: 'LT 5/22/2022 23:03:35'!
+
+!BankAccount methodsFor: 'transactions' stamp: 'LT 5/22/2022 23:03:35'!
 transactions
+
+	self subclassResponsibility ! !
+
+
+!BankAccount methodsFor: 'balance' stamp: 'LT 5/22/2022 23:02:44'!
+balance
+
+	self subclassResponsibility ! !
+
+
+!BankAccount methodsFor: 'assertions' stamp: 'LT 5/23/2022 00:00:11'!
+assertIfCantBeAdded: anAccountOrPortfolioToAdd
 
 	self subclassResponsibility ! !
 
@@ -521,7 +515,7 @@ BankAccount subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'balance' stamp: 'EE 5/19/2022 20:47:10'!
+!Portfolio methodsFor: 'balance' stamp: 'EE 5/23/2022 15:39:22'!
 balance
 	
 	^accountsAndPortfolios sum: [:anAccountOrPortfolio | anAccountOrPortfolio balance] ifEmpty: [0]! !
@@ -572,16 +566,12 @@ fatherCantAdd: anAccountOrPortfolioToAdd
 		
 	].	! !
 
-!Portfolio methodsFor: 'testing' stamp: 'EE 5/19/2022 20:52:49'!
+!Portfolio methodsFor: 'testing' stamp: 'EE 5/23/2022 15:42:15'!
 hasRegistered: anAccountTransaction 
 	
-	| hasRegisterTransaction |
-
-	hasRegisterTransaction := false.
-
-	accountsAndPortfolios do: [:anAccountOrPortfolio | hasRegisterTransaction := hasRegisterTransaction or: [anAccountOrPortfolio hasRegistered: anAccountTransaction]].
+	^ accountsAndPortfolios anySatisfy: [:anAccountOrPortfolio | (anAccountOrPortfolio hasRegistered: anAccountTransaction)].
 	
-	^ hasRegisterTransaction! !
+! !
 
 
 !Portfolio methodsFor: 'initialization' stamp: 'LT 5/23/2022 00:31:05'!
