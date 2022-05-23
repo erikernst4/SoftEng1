@@ -227,19 +227,19 @@ test13PortfolioWithMultipleAccountsAndPortfolioWithAccountsTransactionsAreTheUni
 	
 	! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 21:48:42'!
-test14PortfolioCantAddAnAccountOrPortfolioMoreThanOneTime
+!PortfolioTest methodsFor: 'tests' stamp: 'EE 5/22/2022 21:17:28'!
+test14PortfolioCantAddAnAccountMoreThanOneTime
 
-	| portfolio account portfolio2 |
+	| portfolio account |
 	
 	portfolio := Portfolio new.
 	account := ReceptiveAccount  new.
 	
 	portfolio add: account.
 	
-	[portfolio add: account. self fail] 
-			on: Error
-			do: [:anError | self assert: anError equals: Portfolio cantAddDuplicates.].
+	self should: [portfolio add: account.] 
+			raise: Error
+			withExceptionDo: [:anError | self assert: anError messageText equals: Portfolio cantAddDuplicates.].
 ! !
 
 !PortfolioTest methodsFor: 'tests' stamp: 'EE 5/19/2022 21:49:35'!
@@ -475,14 +475,11 @@ transactions
 	^unionOfTransactions! !
 
 
-!Portfolio methodsFor: 'testing' stamp: 'EE 5/19/2022 21:46:02'!
+!Portfolio methodsFor: 'testing' stamp: 'EE 5/22/2022 21:21:20'!
 assertCanAdd: anAccountOrPortfolioToAdd
 
-	accountsAndPortfolios do: [:anAccountOrPortfolio |
-		(anAccountOrPortfolio isKindOf: #ReceptiveAccount) ifTrue: [(anAccountOrPortfolioToAdd = anAccountOrPortfolio) ifTrue: [Portfolio cantAddDuplicates]].
-		
-		(anAccountOrPortfolio isKindOf: #Portfolio) ifTrue: [((anAccountOrPortfolioToAdd = anAccountOrPortfolio) or: [anAccountOrPortfolio assertCanAdd: anAccountOrPortfolioToAdd]) ifTrue: [Portfolio cantAddDuplicates] ].
-		]! !
+	(accountsAndPortfolios includes: anAccountOrPortfolioToAdd) ifTrue: [self class cantAddDuplicates].
+	! !
 
 !Portfolio methodsFor: 'testing' stamp: 'EE 5/19/2022 20:52:49'!
 hasRegistered: anAccountTransaction 
