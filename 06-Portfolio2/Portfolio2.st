@@ -579,7 +579,7 @@ test03WireTransactionAmountCantBeLessOrEqualThanZero
 		raise: Error
 		withExceptionDo: [:anError | self assert: anError messageText equals: Transfer cantTransferLessOrEqualThanZeroMessage]! !
 
-!TransferTest methodsFor: 'test suite' stamp: 'EE 5/28/2022 17:17:00'!
+!TransferTest methodsFor: 'test suite' stamp: 'LT 5/29/2022 20:54:20'!
 test04SendingAWireTrasactionGetsRegisteredInTheSenderAccountAndTheReceiverAccount
 
 	| accountSender accountReceiver transfer |
@@ -589,9 +589,9 @@ test04SendingAWireTrasactionGetsRegisteredInTheSenderAccountAndTheReceiverAccoun
 	
 	transfer := Transfer for: 100 from: accountSender to: accountReceiver.
 	
-	self assert: (accountSender hasRegistered: transfer).
+	self assert: (accountSender hasRegistered: (transfer sender)).
 	
-	self assert: (accountReceiver hasRegistered: transfer).! !
+	self assert: (accountReceiver hasRegistered: (transfer receiver)).! !
 
 !TransferTest methodsFor: 'test suite' stamp: 'EE 5/28/2022 17:08:51'!
 test05AWireTrasactionValueIsTheAmountOfMoneyTransfered
@@ -863,12 +863,12 @@ transactions
 	^ transactions copy! !
 
 
-!ReceptiveAccount methodsFor: 'balance' stamp: 'EE 5/28/2022 17:14:42'!
+!ReceptiveAccount methodsFor: 'balance' stamp: 'LT 5/29/2022 20:19:45'!
 balance
 
 	^transactions 
 		inject: 0
-		into: [ :currentBalance :transaction | transaction affectBalance: currentBalance for: self ]! !
+		into: [ :currentBalance :transaction | transaction affectBalance: currentBalance ]! !
 
 
 !ReceptiveAccount methodsFor: 'testing' stamp: 'NR 10/21/2019 18:55:56'!
@@ -907,21 +907,21 @@ addBalanceLineToSummary: aSummary
 
 	aSummary add: 'Balance = ', self balance asString,'.'.! !
 
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:38:56'!
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:24:36'!
 addLinesToSummary: aSummary
 	
 	transactions do:[:transaction |
 		
-		aSummary add: (transaction reportTransactionFor: self).
+		aSummary add: (transaction reportTransaction).
 		
 	].! !
 
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:49:49'!
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:26:03'!
 transferNet
 	
 	^ transactions 
 		inject: 0
-		into: [ :currentTransferNet :transaction | transaction affectTransferNet: currentTransferNet for: self ]! !
+		into: [ :currentTransferNet :transaction | transaction affectTransferNet: currentTransferNet]! !
 
 
 !ReceptiveAccount methodsFor: 'transfering' stamp: 'EE 5/28/2022 14:52:24'!
@@ -945,8 +945,8 @@ value
 	^ value.! !
 
 
-!AccountTransaction methodsFor: 'balance' stamp: 'EE 5/28/2022 17:11:04'!
-affectBalance: aBalance for: anAccount
+!AccountTransaction methodsFor: 'balance' stamp: 'LT 5/29/2022 20:22:03'!
+affectBalance: aBalance
 
 	self subclassResponsibility ! !
 
@@ -996,26 +996,26 @@ AccountTransaction subclass: #Deposit
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!Deposit methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:50:43'!
-affectTransferNet: aTransferNet for: anAccount
+!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:13'!
+affectTransferNet: aTransferNet
 
 	^aTransferNet ! !
 
-!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:36:06'!
-reportTransactionFor: anAccount
+!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:00'!
+reportTransaction
 
 	^ 'Depósito por ', value asString ,'.'! !
 
 
-!Deposit methodsFor: 'balance' stamp: 'EE 5/28/2022 17:15:24'!
-affectBalance: aBalance for: anAccount
+!Deposit methodsFor: 'balance' stamp: 'LT 5/29/2022 20:21:52'!
+affectBalance: aBalance
 
 	^aBalance + value! !
 
 
 !classDefinition: #Transfer category: 'Portfolio2'!
 AccountTransaction subclass: #Transfer
-	instanceVariableNames: 'mySendingTransaction myReceptionTransaction mySender myReceiver'
+	instanceVariableNames: 'mySender myReceiver'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio2'!
@@ -1036,16 +1036,19 @@ value
 	^ value! !
 
 
-!Transfer methodsFor: 'initialization' stamp: 'EE 5/28/2022 17:03:21'!
+!Transfer methodsFor: 'initialization' stamp: 'LT 5/29/2022 20:25:37'!
 initializeFor: anAmountOfMoney from: aReceptiveAccountSender to: aReceptiveAccountReceiver 
 
 	self assertCanTransferFrom: aReceptiveAccountSender to: aReceptiveAccountReceiver ofAmount: anAmountOfMoney.
 	
-	mySender := aReceptiveAccountSender register: self.
+	value := anAmountOfMoney.
+
+	mySender := SenderLeg for: anAmountOfMoney from: self.
+	aReceptiveAccountSender register: mySender.
 	
-	myReceiver := aReceptiveAccountReceiver register: self.
-	
-	value := anAmountOfMoney.! !
+	myReceiver := ReceiverLeg for: anAmountOfMoney from: self.
+	aReceptiveAccountReceiver register: myReceiver .
+	! !
 
 
 !Transfer methodsFor: 'assertions' stamp: 'SHAMOUN 5/23/2022 21:55:07'!
@@ -1056,26 +1059,6 @@ assertCanTransferFrom: aReceptiveAccountSender to: aReceptiveAccountReceiver ofA
 	(anAmountOfMoney > 0) ifFalse: [self class cantTransferLessOrEqualThanZero ]! !
 
 
-!Transfer methodsFor: 'balance' stamp: 'EE 5/28/2022 17:14:14'!
-affectBalance: aBalance for: anAccount
-
-	(anAccount = mySender) ifTrue: [ ^ aBalance - value].
-	
-	(anAccount = myReceiver) ifTrue: [^ aBalance + value].! !
-
-
-!Transfer methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:53:01'!
-affectTransferNet: aTransferNet for: anAccount
-
-	(anAccount = mySender) ifTrue: [^ aTransferNet - value].
-	
-	(anAccount =  myReceiver) ifTrue: [^ aTransferNet  + value].! !
-
-!Transfer methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:36:54'!
-reportTransactionFor: anAccount
-
-	(mySender = anAccount) ifTrue: [^ 'Salida por transferencia de ', value asString, '.' ].
-	(myReceiver = anAccount) ifTrue: [^ 'Entrada por transferencia de ', value asString, '.' ].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1111,6 +1094,88 @@ for: aValue from: aReceptiveAccountSender to: aReceiverAccount
 	^self new initializeFor: aValue from: aReceptiveAccountSender to: aReceiverAccount ! !
 
 
+!classDefinition: #ReceiverLeg category: 'Portfolio2'!
+Transfer subclass: #ReceiverLeg
+	instanceVariableNames: 'amountOfMoney'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2'!
+
+!ReceiverLeg methodsFor: 'initialization' stamp: 'LT 5/29/2022 20:09:47'!
+initializeFor: aValue from: aTransfer
+
+	value := aValue.
+	mySender := aTransfer. ! !
+
+
+!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:14:44'!
+affectBalance: aBalance
+
+	^ aBalance + value.! !
+
+!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:15:33'!
+affectTransferNet: aTransferNet
+
+	^ aTransferNet  + value.! !
+
+!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:16:38'!
+reportTransaction 
+
+	^ 'Entrada por transferencia de ', value asString, '.'.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ReceiverLeg class' category: 'Portfolio2'!
+ReceiverLeg class
+	instanceVariableNames: ''!
+
+!ReceiverLeg class methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:12:20'!
+for: aValue from: aTransfer
+
+	^ self new initializeFor: aValue from: aTransfer.! !
+
+
+!classDefinition: #SenderLeg category: 'Portfolio2'!
+Transfer subclass: #SenderLeg
+	instanceVariableNames: 'amountOfMoney'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2'!
+
+!SenderLeg methodsFor: 'initialization' stamp: 'LT 5/29/2022 20:10:02'!
+initializeFor: aValue from: aTransfer
+
+	value := aValue.
+	myReceiver := aTransfer. ! !
+
+
+!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:14:52'!
+affectBalance: aBalance
+
+	^ aBalance - value.! !
+
+!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:15:41'!
+affectTransferNet: aTransferNet
+
+	^ aTransferNet  - value.! !
+
+!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:17:03'!
+reportTransaction
+
+	^ 'Salida por transferencia de ', value asString, '.'.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SenderLeg class' category: 'Portfolio2'!
+SenderLeg class
+	instanceVariableNames: ''!
+
+!SenderLeg class methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:12:29'!
+for: aValue from: aTransfer
+
+	^ self new initializeFor: aValue from: aTransfer.! !
+
+
 !classDefinition: #Withdraw category: 'Portfolio2'!
 AccountTransaction subclass: #Withdraw
 	instanceVariableNames: ''
@@ -1118,18 +1183,58 @@ AccountTransaction subclass: #Withdraw
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!Withdraw methodsFor: 'balance' stamp: 'EE 5/28/2022 17:11:39'!
-affectBalance: aBalance for: anAccount
+!Withdraw methodsFor: 'balance' stamp: 'LT 5/29/2022 20:22:15'!
+affectBalance: aBalance
 
 	^aBalance - value! !
 
 
-!Withdraw methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:51:28'!
-affectTransferNet: aTransferNet for: anAccount
+!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:32'!
+affectTransferNet: aTransferNet
 
 	^aTransferNet! !
 
-!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:37:14'!
-reportTransactionFor: anAccount
+!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:44'!
+reportTransaction
 
 	^ 'Extracción por ', value asString ,'.'! !
+
+
+!classDefinition: #Reporter category: 'Portfolio2'!
+Object subclass: #Reporter
+	instanceVariableNames: 'account'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2'!
+
+!Reporter methodsFor: 'initialize' stamp: 'LT 5/29/2022 19:21:31'!
+initializeWith: anAccount
+
+	self subclassResponsibility.! !
+
+
+!classDefinition: #AccountSummaryPrinter category: 'Portfolio2'!
+Reporter subclass: #AccountSummaryPrinter
+	instanceVariableNames: 'report'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2'!
+
+!AccountSummaryPrinter methodsFor: 'initialize' stamp: 'LT 5/29/2022 19:23:05'!
+initializeWith: anAccount
+
+	account := anAccount.
+	report = OrderedCollection new.! !
+
+
+!classDefinition: #TransferNetCalculator category: 'Portfolio2'!
+Reporter subclass: #TransferNetCalculator
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2'!
+
+!TransferNetCalculator methodsFor: 'initialize' stamp: 'LT 5/29/2022 19:22:54'!
+initializeWith: anAccount
+
+	account := anAccount.! !
