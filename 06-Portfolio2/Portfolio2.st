@@ -312,44 +312,56 @@ TestCase subclass: #ReportTest
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 14:25:55'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 15:49:14'!
 test01NewAccountAccountSummaryOnlyReturnsZeroBalance
 
-		| account |
+	| account expectedSummary |
 	
 	account := ReceptiveAccount new.
+	
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: 'Balance = 0.'.
 
-	self assert: 'Balance = 0.' equals: account accountSummary.! !
+	self assert: expectedSummary equals: account accountSummary.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 14:07:05'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 15:52:42'!
 test02AccountWithOneDepositAccountSummaryReturnsTheReportOfTheDepositAndTheBalance
 
-		| account deposit |
+	| account deposit expectedSummary |
 	
 	account := ReceptiveAccount  new.
 	deposit := Deposit register: 100 on: account.
+	
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: ('Depósito por ', deposit value asString,'.').
+	expectedSummary add: ('Balance = ', deposit value asString,'.').
 		
-	self assert: 'Depósito por ', deposit value asString ,'.Balance = ', deposit value asString,'.'
+	self assert: expectedSummary
 		equals: account accountSummary
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 14:13:39'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 15:55:57'!
 test03AccountWithMultipleDepositsAccountSummaryReturnsTheReportOfTheDepositsAndTheBalance
 
-		| account deposit1 deposit2 |
+	| account deposit1 deposit2 expectedSummary |
 	
 	account := ReceptiveAccount  new.
 	deposit1 := Deposit register: 100 on: account.
 	deposit2 := Deposit register: 44 on: account.		
+	
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: ('Depósito por ', deposit1 value asString,'.').
+	expectedSummary add: ('Depósito por ', deposit2 value asString,'.').
+	expectedSummary add: ('Balance = ', (deposit1 value + deposit2 value) asString,'.').
 
-	self assert: 'Depósito por ', deposit1 value asString ,'.Depósito por ', deposit2 value asString ,'.Balance = ', (deposit1 value + deposit2 value) asString,'.'
+	self assert: expectedSummary 
 		equals: account accountSummary
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 14:34:13'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:01:47'!
 test04AccountWithMultipleDepositsAndWithdrawsAccountSummaryReturnsTheReportOfTheDepositsWithdrawsAndTheBalance
 
-		| account deposit1 deposit2 withdraw1 withdraw2 |
+	| account deposit1 deposit2 withdraw1 withdraw2 expectedSummary |
 	
 	account := ReceptiveAccount  new.
 	deposit1 := Deposit register: 100 on: account.
@@ -357,27 +369,39 @@ test04AccountWithMultipleDepositsAndWithdrawsAccountSummaryReturnsTheReportOfThe
 	withdraw1 := Withdraw register: 50 on: account.
 	withdraw2 := Withdraw register: 48 on: account.
 	
-	self assert:
-	'Depósito por ', deposit1 value asString ,'.Depósito por ', deposit2 value asString, '.Extracción por ', withdraw1 value asString, '.Extracción por ', withdraw2 value asString,'.Balance = ', account balance asString,'.'
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: ('Depósito por ', deposit1 value asString,'.').
+	expectedSummary add: ('Depósito por ', deposit2 value asString,'.').
+	expectedSummary add: ('Extracción por ', withdraw1 value asString,'.').
+	expectedSummary add: ('Extracción por ', withdraw2 value asString,'.').
+	expectedSummary add: ('Balance = ', account balance asString,'.').
+	
+	self assert: expectedSummary 
 		equals: account accountSummary
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:06:58'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:06:53'!
 test05ATransferGetsReportedInTheSenderAndTheReceiver
 
-		| accountReceiver accountSender transfer |
+		| accountReceiver accountSender transfer expectedSummaryForSender expectedSummaryForReceiver |
 	
 	accountSender := ReceptiveAccount  new.
 	accountReceiver := ReceptiveAccount  new.
 
 	transfer := Transfer for: 100 from: accountSender to: accountReceiver.
 	
-	self assert:
-		'Salida por transferencia de ', transfer value asString,'.Balance = ', accountSender balance asString,'.'
+	expectedSummaryForSender := OrderedCollection new.
+	expectedSummaryForSender add: ('Salida por transferencia de ', transfer value asString,'.').
+	expectedSummaryForSender add: ('Balance = ', accountSender balance asString,'.').
+	
+	expectedSummaryForReceiver := OrderedCollection new.
+	expectedSummaryForReceiver add: ('Entrada por transferencia de ', transfer value asString,'.').
+	expectedSummaryForReceiver add: ('Balance = ', accountReceiver balance asString,'.').
+	
+	self assert: expectedSummaryForSender 
 		equals: accountSender accountSummary.
 		
-	self assert:
-		'Entrada por transferencia de ', transfer value asString,'.Balance = ', accountReceiver balance asString,'.'
+	self assert: expectedSummaryForReceiver 
 		equals: accountReceiver accountSummary
 ! !
 
@@ -419,6 +443,96 @@ test08transferNetForOfAnAccountSubstractsWhenSendingAndAddsWhenReceivingTransfer
 	self assert: (transfer1 value + transfer2 value) equals: accountReceiver transferNet.
 	
 	self assert: (0 - transfer1 value - transfer2 value) equals: accountSender transferNet.! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:23:49'!
+test09NewPortfolioAccountSummaryOnlyReturnsZeroBalance
+
+	| portfolio expectedSummary |
+	
+	portfolio := Portfolio new.
+	
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: 'Balance = 0.'.
+
+	self assert: expectedSummary equals: portfolio accountSummary.! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:34:46'!
+test10PortfolioWithMultipleReceptiveAccountsAccountSummaryReturnsTheAccoutsTransactionsAndItsBalance
+
+	| portfolio account1 account2 deposit withdraw expectedSummary |
+	
+	account1 := ReceptiveAccount  new.
+	deposit := Deposit register: 100 on: account1.
+	
+	account2 := ReceptiveAccount new.
+	withdraw := Withdraw register: 20 on: account2.
+	
+	portfolio := Portfolio with: account1 with: account2.  
+	
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: ('Depósito por ', deposit value asString,'.').
+	expectedSummary add: ('Extracción por ', withdraw value asString,'.').
+	expectedSummary add: ('Balance = ', portfolio balance asString,'.').
+		
+	self assert: expectedSummary
+		equals: portfolio accountSummary
+		! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 17:13:51'!
+test11PortfolioWithMultiplePortfoliosAccountSummaryReturnsThePortfoliosAccountsTransactionsAndItsBalance
+
+	| portfolioToTest portfolio1 portfolio2 account1 account2 account3 expectedSummary |
+	
+	account1 := ReceptiveAccount  new.
+	Deposit register: 100 on: account1.
+	
+	account2 := ReceptiveAccount new.
+	Withdraw register: 20 on: account2.
+	
+	portfolio1 := Portfolio with: account1 with: account2.
+	
+	account3 := ReceptiveAccount  new.
+	Deposit register: 50 on: account3.
+	
+	portfolio2 := Portfolio with: account3.
+	
+	portfolioToTest := Portfolio with: portfolio1 with: portfolio2 .  
+	
+	expectedSummary := OrderedCollection new.
+	expectedSummary add: ('Depósito por 100.').
+	expectedSummary add: ('Extracción por 20.').
+	expectedSummary add: ('Depósito por 50.').
+	expectedSummary add: ('Balance = ', portfolioToTest balance asString,'.').
+		
+	self assert: expectedSummary
+		equals: portfolioToTest accountSummary
+		! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 17:14:01'!
+test12transferNetForAnEmptyPortfolioIsZero
+
+	| portfolio |
+	
+	portfolio := Portfolio new.
+	
+	self assert: portfolio transferNet equals: 0.! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 17:23:51'!
+test13transferNetForAPortfolioWithAccountsIsTheSumOfAccountsTransferNet
+
+	| portfolioSender portfolioReceiver accountSender accountReceiver |
+	
+	accountSender := ReceptiveAccount  new.
+	accountReceiver := ReceptiveAccount  new.
+
+	Transfer for: 100 from: accountSender to: accountReceiver.
+	Transfer for: 44 from: accountSender to: accountReceiver.	
+	
+	portfolioSender := Portfolio with: accountSender.
+	portfolioReceiver := Portfolio with: accountReceiver .
+	
+	self assert: -144 equals: portfolioSender transferNet.
+	self assert: 144 equals: portfolioReceiver transferNet.! !
 
 
 !classDefinition: #TransferTest category: 'Portfolio2'!
@@ -644,6 +758,53 @@ signalCanNotAddAccount
 	
 	self error: self class canNotAddAccountErrorMessage! !
 
+
+!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 16:39:35'!
+accountSummary
+
+	| summary |
+
+	summary := OrderedCollection new.
+	
+	accounts do: [ :account | 
+		
+		account addLinesToSummary: summary.
+		
+	].
+	
+	self addBalanceLineToSummary: summary .
+	
+	^ summary
+	! !
+
+!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 16:39:12'!
+addBalanceLineToSummary: aSummary
+
+	aSummary add: 'Balance = ', self balance asString,'.'.
+
+	! !
+
+!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 17:04:12'!
+addLinesToSummary: summary.
+
+	accounts do: [ :account | 
+		
+		account addLinesToSummary: summary.
+		
+	].
+	! !
+
+!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 17:23:14'!
+transferNet
+
+	^ accounts inject: 0 into: [ :currentTransferNet :account |
+	
+		currentTransferNet + (	account transferNet)
+		
+	].
+
+	! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Portfolio class' category: 'Portfolio2'!
@@ -728,21 +889,32 @@ addedTo: aPortfolio
 	! !
 
 
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:32:15'!
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:29:49'!
 accountSummary
 
 	| summary |
 
-	summary := ''.
+	summary := OrderedCollection new.
+	
+	self addLinesToSummary: summary.
+	
+	self addBalanceLineToSummary: summary.
+	
+	^summary! !
+
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:30:14'!
+addBalanceLineToSummary: aSummary
+
+	aSummary add: 'Balance = ', self balance asString,'.'.! !
+
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:38:56'!
+addLinesToSummary: aSummary
 	
 	transactions do:[:transaction |
 		
-		summary := transaction addToAccountSummary: summary for: self.
-	].
-
-	summary := summary ,'Balance = ', self balance asString,'.'.
-	
-	^summary! !
+		aSummary add: (transaction reportTransactionFor: self).
+		
+	].! !
 
 !ReceptiveAccount methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:49:49'!
 transferNet
@@ -785,13 +957,13 @@ initializeFor: aValue
 	value := aValue.! !
 
 
-!AccountTransaction methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:30:41'!
-addToAccountSummary: anAccountSummary for: anAccount
+!AccountTransaction methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:50:20'!
+affectTransferNet: aTransferNet for: anAccount
 
 	self subclassResponsibility ! !
 
-!AccountTransaction methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:50:20'!
-affectTransferNet: aTransferNet for: anAccount
+!AccountTransaction methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:35:40'!
+reportTransactionFor: anAccount
 
 	self subclassResponsibility ! !
 
@@ -824,22 +996,21 @@ AccountTransaction subclass: #Deposit
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!Deposit methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:30:50'!
-addToAccountSummary: anAccountSummary for: anAccount
+!Deposit methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:50:43'!
+affectTransferNet: aTransferNet for: anAccount
 
-	^ anAccountSummary , 'Depósito por ', value asString ,'.'! !
+	^aTransferNet ! !
+
+!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:36:06'!
+reportTransactionFor: anAccount
+
+	^ 'Depósito por ', value asString ,'.'! !
 
 
 !Deposit methodsFor: 'balance' stamp: 'EE 5/28/2022 17:15:24'!
 affectBalance: aBalance for: anAccount
 
 	^aBalance + value! !
-
-
-!Deposit methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:50:43'!
-affectTransferNet: aTransferNet for: anAccount
-
-	^aTransferNet ! !
 
 
 !classDefinition: #Transfer category: 'Portfolio2'!
@@ -893,19 +1064,18 @@ affectBalance: aBalance for: anAccount
 	(anAccount = myReceiver) ifTrue: [^ aBalance + value].! !
 
 
-!Transfer methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:30:09'!
-addToAccountSummary: anAccountSummary for: anAccount
-
-	(mySender = anAccount) ifTrue: [^ anAccountSummary, 'Salida por transferencia de ', value asString, '.' ].
-	(myReceiver = anAccount) ifTrue: [^ anAccountSummary, 'Entrada por transferencia de ', value asString, '.' ].! !
-
-
-!Transfer methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:53:01'!
+!Transfer methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:53:01'!
 affectTransferNet: aTransferNet for: anAccount
 
 	(anAccount = mySender) ifTrue: [^ aTransferNet - value].
 	
 	(anAccount =  myReceiver) ifTrue: [^ aTransferNet  + value].! !
+
+!Transfer methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:36:54'!
+reportTransactionFor: anAccount
+
+	(mySender = anAccount) ifTrue: [^ 'Salida por transferencia de ', value asString, '.' ].
+	(myReceiver = anAccount) ifTrue: [^ 'Entrada por transferencia de ', value asString, '.' ].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -954,12 +1124,12 @@ affectBalance: aBalance for: anAccount
 	^aBalance - value! !
 
 
-!Withdraw methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:31:05'!
-addToAccountSummary: anAccountSummary for: anAccount
-
-	^ anAccountSummary , 'Extracción por ', value asString ,'.'! !
-
-!Withdraw methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:51:28'!
+!Withdraw methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:51:28'!
 affectTransferNet: aTransferNet for: anAccount
 
 	^aTransferNet! !
+
+!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:37:14'!
+reportTransactionFor: anAccount
+
+	^ 'Extracción por ', value asString ,'.'! !
