@@ -834,7 +834,7 @@ with: anAccount with: anotherAccount
 
 !classDefinition: #ReceptiveAccount category: 'Portfolio2'!
 Account subclass: #ReceptiveAccount
-	instanceVariableNames: 'transactions transfers'
+	instanceVariableNames: 'transactions'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio2'!
@@ -924,13 +924,6 @@ transferNet
 		into: [ :currentTransferNet :transaction | transaction affectTransferNet: currentTransferNet]! !
 
 
-!ReceptiveAccount methodsFor: 'transfering' stamp: 'EE 5/28/2022 14:52:24'!
-addTransfer: aTransfer
-
-	transfers add: aTransfer.
-	
-	^aTransfer! !
-
 
 !classDefinition: #AccountTransaction category: 'Portfolio2'!
 Object subclass: #AccountTransaction
@@ -957,15 +950,15 @@ initializeFor: aValue
 	value := aValue.! !
 
 
-!AccountTransaction methodsFor: 'reporting' stamp: 'EE 5/28/2022 17:50:20'!
-affectTransferNet: aTransferNet for: anAccount
+!AccountTransaction methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:12:26'!
+affectTransferNet: aTransferNet
 
-	self subclassResponsibility ! !
+	self subclassResponsibility.! !
 
-!AccountTransaction methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:35:40'!
-reportTransactionFor: anAccount
+!AccountTransaction methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:12:57'!
+reportTransaction
 
-	self subclassResponsibility ! !
+	self subclassResponsibility.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1020,23 +1013,18 @@ AccountTransaction subclass: #Transfer
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!Transfer methodsFor: 'accessing' stamp: 'EE 5/28/2022 14:50:01'!
+!Transfer methodsFor: 'accessing' stamp: 'LT 5/29/2022 21:22:09'!
 receiver
 
-	^myReceiver! !
+	^ myReceiver.! !
 
-!Transfer methodsFor: 'accessing' stamp: 'EE 5/28/2022 14:49:47'!
+!Transfer methodsFor: 'accessing' stamp: 'LT 5/29/2022 21:22:19'!
 sender
 
-	^mySender! !
-
-!Transfer methodsFor: 'accessing' stamp: 'EE 5/28/2022 15:07:51'!
-value
-
-	^ value! !
+	^ mySender.! !
 
 
-!Transfer methodsFor: 'initialization' stamp: 'LT 5/29/2022 20:25:37'!
+!Transfer methodsFor: 'initialization' stamp: 'LT 5/29/2022 21:21:57'!
 initializeFor: anAmountOfMoney from: aReceptiveAccountSender to: aReceptiveAccountReceiver 
 
 	self assertCanTransferFrom: aReceptiveAccountSender to: aReceptiveAccountReceiver ofAmount: anAmountOfMoney.
@@ -1047,7 +1035,7 @@ initializeFor: anAmountOfMoney from: aReceptiveAccountSender to: aReceptiveAccou
 	aReceptiveAccountSender register: mySender.
 	
 	myReceiver := ReceiverLeg for: anAmountOfMoney from: self.
-	aReceptiveAccountReceiver register: myReceiver .
+	aReceptiveAccountReceiver register: myReceiver.
 	! !
 
 
@@ -1059,6 +1047,21 @@ assertCanTransferFrom: aReceptiveAccountSender to: aReceptiveAccountReceiver ofA
 	(anAmountOfMoney > 0) ifFalse: [self class cantTransferLessOrEqualThanZero ]! !
 
 
+!Transfer methodsFor: 'balance' stamp: 'LT 5/29/2022 21:11:19'!
+affectBalance: aBalance
+
+	self subclassResponsibility.! !
+
+
+!Transfer methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:21:47'!
+affectTransferNet: aTransferNet
+
+	self subclassResponsibility.! !
+
+!Transfer methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:13:40'!
+reportTransaction
+
+	self subclassResponsibility.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1113,10 +1116,10 @@ affectBalance: aBalance
 
 	^ aBalance + value.! !
 
-!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:15:33'!
+!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 21:23:32'!
 affectTransferNet: aTransferNet
 
-	^ aTransferNet  + value.! !
+	^ aTransferNet + value.! !
 
 !ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:16:38'!
 reportTransaction 
@@ -1154,10 +1157,10 @@ affectBalance: aBalance
 
 	^ aBalance - value.! !
 
-!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:15:41'!
+!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 21:23:57'!
 affectTransferNet: aTransferNet
 
-	^ aTransferNet  - value.! !
+	^ aTransferNet - value.! !
 
 !SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:17:03'!
 reportTransaction
@@ -1183,16 +1186,16 @@ AccountTransaction subclass: #Withdraw
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!Withdraw methodsFor: 'balance' stamp: 'LT 5/29/2022 20:22:15'!
+!Withdraw methodsFor: 'balance' stamp: 'LT 5/29/2022 21:24:15'!
 affectBalance: aBalance
 
-	^aBalance - value! !
+	^ aBalance - value.! !
 
 
-!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:32'!
+!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:24:28'!
 affectTransferNet: aTransferNet
 
-	^aTransferNet! !
+	^ aTransferNet.! !
 
 !Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:44'!
 reportTransaction
