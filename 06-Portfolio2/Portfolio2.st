@@ -312,22 +312,24 @@ TestCase subclass: #ReportTest
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 15:49:14'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:01:54'!
 test01NewAccountAccountSummaryOnlyReturnsZeroBalance
 
-	| account expectedSummary |
+	| account expectedSummary accountSummary |
 	
 	account := ReceptiveAccount new.
 	
 	expectedSummary := OrderedCollection new.
 	expectedSummary add: 'Balance = 0.'.
+	
+	accountSummary := SummaryPrinter with: account.
 
-	self assert: expectedSummary equals: account accountSummary.! !
+	self assert: expectedSummary equals: accountSummary printSummary.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 15:52:42'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:05:29'!
 test02AccountWithOneDepositAccountSummaryReturnsTheReportOfTheDepositAndTheBalance
 
-	| account deposit expectedSummary |
+	| account deposit expectedSummary accountSummary |
 	
 	account := ReceptiveAccount  new.
 	deposit := Deposit register: 100 on: account.
@@ -336,14 +338,16 @@ test02AccountWithOneDepositAccountSummaryReturnsTheReportOfTheDepositAndTheBalan
 	expectedSummary add: ('Depósito por ', deposit value asString,'.').
 	expectedSummary add: ('Balance = ', deposit value asString,'.').
 		
+	accountSummary := SummaryPrinter with: account.
+		
 	self assert: expectedSummary
-		equals: account accountSummary
+		equals: accountSummary printSummary.
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 15:55:57'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:06:13'!
 test03AccountWithMultipleDepositsAccountSummaryReturnsTheReportOfTheDepositsAndTheBalance
 
-	| account deposit1 deposit2 expectedSummary |
+	| account deposit1 deposit2 expectedSummary accountSummary |
 	
 	account := ReceptiveAccount  new.
 	deposit1 := Deposit register: 100 on: account.
@@ -354,14 +358,16 @@ test03AccountWithMultipleDepositsAccountSummaryReturnsTheReportOfTheDepositsAndT
 	expectedSummary add: ('Depósito por ', deposit2 value asString,'.').
 	expectedSummary add: ('Balance = ', (deposit1 value + deposit2 value) asString,'.').
 
+	accountSummary := SummaryPrinter with: account.
+
 	self assert: expectedSummary 
-		equals: account accountSummary
+		equals: accountSummary printSummary.
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:01:47'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:06:55'!
 test04AccountWithMultipleDepositsAndWithdrawsAccountSummaryReturnsTheReportOfTheDepositsWithdrawsAndTheBalance
 
-	| account deposit1 deposit2 withdraw1 withdraw2 expectedSummary |
+	| account deposit1 deposit2 withdraw1 withdraw2 expectedSummary accountSummary |
 	
 	account := ReceptiveAccount  new.
 	deposit1 := Deposit register: 100 on: account.
@@ -376,14 +382,16 @@ test04AccountWithMultipleDepositsAndWithdrawsAccountSummaryReturnsTheReportOfThe
 	expectedSummary add: ('Extracción por ', withdraw2 value asString,'.').
 	expectedSummary add: ('Balance = ', account balance asString,'.').
 	
+	accountSummary := SummaryPrinter with: account.
+	
 	self assert: expectedSummary 
-		equals: account accountSummary
+		equals: accountSummary printSummary.
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:06:53'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:09:14'!
 test05ATransferGetsReportedInTheSenderAndTheReceiver
 
-		| accountReceiver accountSender transfer expectedSummaryForSender expectedSummaryForReceiver |
+	| accountReceiver accountSender transfer expectedSummaryForSender expectedSummaryForReceiver accountSummarySender accountSummaryReceiver|
 	
 	accountSender := ReceptiveAccount  new.
 	accountReceiver := ReceptiveAccount  new.
@@ -398,26 +406,31 @@ test05ATransferGetsReportedInTheSenderAndTheReceiver
 	expectedSummaryForReceiver add: ('Entrada por transferencia de ', transfer value asString,'.').
 	expectedSummaryForReceiver add: ('Balance = ', accountReceiver balance asString,'.').
 	
+	accountSummarySender := SummaryPrinter with: accountSender. 
+	accountSummaryReceiver := SummaryPrinter with: accountReceiver.
+	
 	self assert: expectedSummaryForSender 
-		equals: accountSender accountSummary.
+		equals: accountSummarySender printSummary.
 		
 	self assert: expectedSummaryForReceiver 
-		equals: accountReceiver accountSummary
+		equals: accountSummaryReceiver printSummary.
 ! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:46:17'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:26:04'!
 test06transferNetForAnAccountWithoutTransfersIsZero
 
-		| account |
+	| account transferNet |
 	
 	account := ReceptiveAccount  new.
 	
-	self assert: account transferNet equals: 0.! !
+	transferNet := TransferNetCalculator with: account.
+	
+	self assert: transferNet calculateTransferNet equals: 0.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:48:19'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:07:56'!
 test07transferNetForAnAccountWithOnlyReceivedTransfersIsTheSumOfTheTransfersValues
 
-		| accountReceiver accountSender transfer1 transfer2 |
+		| accountReceiver accountSender transfer1 transfer2 transferNet|
 	
 	accountSender := ReceptiveAccount  new.
 	accountReceiver := ReceptiveAccount  new.
@@ -426,40 +439,45 @@ test07transferNetForAnAccountWithOnlyReceivedTransfersIsTheSumOfTheTransfersValu
 
 	transfer2 := Transfer for: 44 from: accountSender to: accountReceiver.	
 	
-	self assert: (transfer1 value + transfer2 value) equals: accountReceiver transferNet.! !
+	transferNet := TransferNetCalculator with: accountReceiver.
+	
+	self assert: (transfer1 value + transfer2 value) equals: (transferNet calculateTransferNet).! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'EE 5/28/2022 17:55:45'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:13:56'!
 test08transferNetForOfAnAccountSubstractsWhenSendingAndAddsWhenReceivingTransfer
 
-		| accountReceiver accountSender transfer1 transfer2 |
+	| accountReceiver accountSender transfer1 transfer2 transferNetReceiver transferNetSender |
 	
 	accountSender := ReceptiveAccount  new.
 	accountReceiver := ReceptiveAccount  new.
 
 	transfer1 := Transfer for: 100 from: accountSender to: accountReceiver.
-
 	transfer2 := Transfer for: 44 from: accountSender to: accountReceiver.	
 	
-	self assert: (transfer1 value + transfer2 value) equals: accountReceiver transferNet.
+	transferNetSender := TransferNetCalculator with: accountSender.
+	transferNetReceiver := TransferNetCalculator with: accountReceiver.
 	
-	self assert: (0 - transfer1 value - transfer2 value) equals: accountSender transferNet.! !
+	self assert: (transfer1 value + transfer2 value) equals: transferNetReceiver calculateTransferNet.
+	self assert: (0 - transfer1 value - transfer2 value) equals: transferNetSender calculateTransferNet.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:23:49'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:09:50'!
 test09NewPortfolioAccountSummaryOnlyReturnsZeroBalance
 
-	| portfolio expectedSummary |
+	| portfolio expectedSummary accountSummary |
 	
 	portfolio := Portfolio new.
 	
 	expectedSummary := OrderedCollection new.
 	expectedSummary add: 'Balance = 0.'.
+	
+	accountSummary := SummaryPrinter with: portfolio.
 
-	self assert: expectedSummary equals: portfolio accountSummary.! !
+	self assert: expectedSummary equals: accountSummary printSummary.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 16:34:46'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:10:28'!
 test10PortfolioWithMultipleReceptiveAccountsAccountSummaryReturnsTheAccoutsTransactionsAndItsBalance
 
-	| portfolio account1 account2 deposit withdraw expectedSummary |
+	| portfolio account1 account2 deposit withdraw expectedSummary accountSummary |
 	
 	account1 := ReceptiveAccount  new.
 	deposit := Deposit register: 100 on: account1.
@@ -474,14 +492,16 @@ test10PortfolioWithMultipleReceptiveAccountsAccountSummaryReturnsTheAccoutsTrans
 	expectedSummary add: ('Extracción por ', withdraw value asString,'.').
 	expectedSummary add: ('Balance = ', portfolio balance asString,'.').
 		
+	accountSummary := SummaryPrinter with: portfolio.
+		
 	self assert: expectedSummary
-		equals: portfolio accountSummary
+		equals: accountSummary printSummary.
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 17:13:51'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:11:07'!
 test11PortfolioWithMultiplePortfoliosAccountSummaryReturnsThePortfoliosAccountsTransactionsAndItsBalance
 
-	| portfolioToTest portfolio1 portfolio2 account1 account2 account3 expectedSummary |
+	| portfolioToTest portfolio1 portfolio2 account1 account2 account3 expectedSummary accountSummary |
 	
 	account1 := ReceptiveAccount  new.
 	Deposit register: 100 on: account1.
@@ -504,23 +524,27 @@ test11PortfolioWithMultiplePortfoliosAccountSummaryReturnsThePortfoliosAccountsT
 	expectedSummary add: ('Depósito por 50.').
 	expectedSummary add: ('Balance = ', portfolioToTest balance asString,'.').
 		
+	accountSummary := SummaryPrinter with: portfolioToTest.
+		
 	self assert: expectedSummary
-		equals: portfolioToTest accountSummary
+		equals: accountSummary printSummary.
 		! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 17:14:01'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:26:45'!
 test12transferNetForAnEmptyPortfolioIsZero
 
-	| portfolio |
+	| portfolio transferNet |
 	
 	portfolio := Portfolio new.
 	
-	self assert: portfolio transferNet equals: 0.! !
+	transferNet := TransferNetCalculator with: portfolio.
+	
+	self assert: transferNet calculateTransferNet equals: 0.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 17:23:51'!
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:16:39'!
 test13transferNetForAPortfolioWithAccountsIsTheSumOfAccountsTransferNet
 
-	| portfolioSender portfolioReceiver accountSender accountReceiver |
+	| portfolioSender portfolioReceiver accountSender accountReceiver transferNetSender transferNetReceiver |
 	
 	accountSender := ReceptiveAccount  new.
 	accountReceiver := ReceptiveAccount  new.
@@ -529,10 +553,13 @@ test13transferNetForAPortfolioWithAccountsIsTheSumOfAccountsTransferNet
 	Transfer for: 44 from: accountSender to: accountReceiver.	
 	
 	portfolioSender := Portfolio with: accountSender.
-	portfolioReceiver := Portfolio with: accountReceiver .
+	portfolioReceiver := Portfolio with: accountReceiver.
 	
-	self assert: -144 equals: portfolioSender transferNet.
-	self assert: 144 equals: portfolioReceiver transferNet.! !
+	transferNetSender := TransferNetCalculator with: portfolioSender.
+	transferNetReceiver := TransferNetCalculator with: portfolioReceiver.
+	
+	self assert: -144 equals: transferNetSender calculateTransferNet.
+	self assert: 144 equals: transferNetReceiver calculateTransferNet.! !
 
 
 !classDefinition: #TransferTest category: 'Portfolio2'!
@@ -759,49 +786,20 @@ signalCanNotAddAccount
 	self error: self class canNotAddAccountErrorMessage! !
 
 
-!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 16:39:35'!
-accountSummary
-
-	| summary |
-
-	summary := OrderedCollection new.
+!Portfolio methodsFor: 'reporting' stamp: 'LT 5/30/2022 00:46:54'!
+accountSummary: aSummaryPrinter
 	
 	accounts do: [ :account | 
 		
-		account addLinesToSummary: summary.
-		
-	].
-	
-	self addBalanceLineToSummary: summary .
-	
-	^ summary
-	! !
-
-!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 16:39:12'!
-addBalanceLineToSummary: aSummary
-
-	aSummary add: 'Balance = ', self balance asString,'.'.
-
-	! !
-
-!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 17:04:12'!
-addLinesToSummary: summary.
-
-	accounts do: [ :account | 
-		
-		account addLinesToSummary: summary.
+		account accountSummary: aSummaryPrinter.
 		
 	].
 	! !
 
-!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 17:23:14'!
-transferNet
+!Portfolio methodsFor: 'reporting' stamp: 'LT 5/29/2022 23:56:21'!
+calculateAccountTransferNet: aTransferNetCalculator
 
-	^ accounts inject: 0 into: [ :currentTransferNet :account |
-	
-		currentTransferNet + (	account transferNet)
-		
-	].
+	accounts do: [ :account | account calculateAccountTransferNet: aTransferNetCalculator ]
 
 	! !
 
@@ -889,40 +887,26 @@ addedTo: aPortfolio
 	! !
 
 
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:29:49'!
-accountSummary
-
-	| summary |
-
-	summary := OrderedCollection new.
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/30/2022 00:42:43'!
+accountSummary: aSummaryPrinter
 	
-	self addLinesToSummary: summary.
-	
-	self addBalanceLineToSummary: summary.
-	
-	^summary! !
+	self addLinesToSummary: aSummaryPrinter.! !
 
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 15:30:14'!
-addBalanceLineToSummary: aSummary
-
-	aSummary add: 'Balance = ', self balance asString,'.'.! !
-
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:24:36'!
-addLinesToSummary: aSummary
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/30/2022 00:48:38'!
+addLinesToSummary: aSummaryPrinter
 	
 	transactions do:[:transaction |
 		
-		aSummary add: (transaction reportTransaction).
+		transaction reportTransaction: aSummaryPrinter.
 		
 	].! !
 
-!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:26:03'!
-transferNet
-	
-	^ transactions 
-		inject: 0
-		into: [ :currentTransferNet :transaction | transaction affectTransferNet: currentTransferNet]! !
+!ReceptiveAccount methodsFor: 'reporting' stamp: 'LT 5/29/2022 23:56:40'!
+calculateAccountTransferNet: aTransferNetCalculator
 
+	transactions do: [ :transaction | 
+		 transaction affectTransferNet: aTransferNetCalculator.
+	].! !
 
 
 !classDefinition: #AccountTransaction category: 'Portfolio2'!
@@ -950,8 +934,8 @@ initializeFor: aValue
 	value := aValue.! !
 
 
-!AccountTransaction methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:12:26'!
-affectTransferNet: aTransferNet
+!AccountTransaction methodsFor: 'reporting' stamp: 'LT 5/29/2022 23:57:33'!
+affectTransferNet: aTransferNetCalculator
 
 	self subclassResponsibility.! !
 
@@ -989,15 +973,15 @@ AccountTransaction subclass: #Deposit
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:13'!
-affectTransferNet: aTransferNet
+!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 23:59:52'!
+affectTransferNet: aTransferNetCalculator
 
-	^aTransferNet ! !
+	^ aTransferNetCalculator depositAffectsTransferNet: self.! !
 
-!Deposit methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:00'!
-reportTransaction
+!Deposit methodsFor: 'reporting' stamp: 'LT 5/30/2022 00:51:37'!
+reportTransaction: aSummaryPrinter
 
-	^ 'Depósito por ', value asString ,'.'! !
+	aSummaryPrinter reportDeposit: self.! !
 
 
 !Deposit methodsFor: 'balance' stamp: 'LT 5/29/2022 20:21:52'!
@@ -1058,8 +1042,8 @@ affectTransferNet: aTransferNet
 
 	self subclassResponsibility.! !
 
-!Transfer methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:13:40'!
-reportTransaction
+!Transfer methodsFor: 'reporting' stamp: 'LT 5/30/2022 00:49:28'!
+reportTransaction: aSummaryPrinter
 
 	self subclassResponsibility.! !
 
@@ -1116,15 +1100,15 @@ affectBalance: aBalance
 
 	^ aBalance + value.! !
 
-!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 21:23:32'!
-affectTransferNet: aTransferNet
+!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:00:13'!
+affectTransferNet: aTransferNetCalculator
 
-	^ aTransferNet + value.! !
+	^ aTransferNetCalculator receiverLegAffectsTransferNet: self.! !
 
-!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:16:38'!
-reportTransaction 
+!ReceiverLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:56:28'!
+reportTransaction: aSummaryPrinter
 
-	^ 'Entrada por transferencia de ', value asString, '.'.! !
+	aSummaryPrinter reportReceiverLeg: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1157,15 +1141,15 @@ affectBalance: aBalance
 
 	^ aBalance - value.! !
 
-!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 21:23:57'!
-affectTransferNet: aTransferNet
+!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:00:31'!
+affectTransferNet: aTransferNetCalculator
 
-	^ aTransferNet - value.! !
+	^ aTransferNetCalculator senderLegAffectsTransferNet: self.! !
 
-!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/29/2022 20:17:03'!
-reportTransaction
+!SenderLeg methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 00:57:29'!
+reportTransaction: aSummaryPrinter
 
-	^ 'Salida por transferencia de ', value asString, '.'.! !
+	aSummaryPrinter reportSenderLeg: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1192,15 +1176,15 @@ affectBalance: aBalance
 	^ aBalance - value.! !
 
 
-!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 21:24:28'!
-affectTransferNet: aTransferNet
+!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 23:59:43'!
+affectTransferNet: aTransferNetCalculator
 
-	^ aTransferNet.! !
+	^ aTransferNetCalculator withdrawAffectsTransferNet: self.! !
 
-!Withdraw methodsFor: 'reporting' stamp: 'LT 5/29/2022 20:23:44'!
-reportTransaction
+!Withdraw methodsFor: 'reporting' stamp: 'LT 5/30/2022 00:54:18'!
+reportTransaction: aSummaryPrinter
 
-	^ 'Extracción por ', value asString ,'.'! !
+	aSummaryPrinter reportWithdraw: self.! !
 
 
 !classDefinition: #Reporter category: 'Portfolio2'!
@@ -1216,28 +1200,129 @@ initializeWith: anAccount
 	self subclassResponsibility.! !
 
 
-!classDefinition: #AccountSummaryPrinter category: 'Portfolio2'!
-Reporter subclass: #AccountSummaryPrinter
-	instanceVariableNames: 'report'
+!classDefinition: #SummaryPrinter category: 'Portfolio2'!
+Reporter subclass: #SummaryPrinter
+	instanceVariableNames: 'summary'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!AccountSummaryPrinter methodsFor: 'initialize' stamp: 'LT 5/29/2022 19:23:05'!
+!SummaryPrinter methodsFor: 'initialize' stamp: 'LT 5/30/2022 01:04:30'!
 initializeWith: anAccount
 
 	account := anAccount.
-	report = OrderedCollection new.! !
+	summary := OrderedCollection new.! !
+
+
+!SummaryPrinter methodsFor: 'printing' stamp: 'LT 5/30/2022 01:02:39'!
+printSummary
+
+	account accountSummary: self.
+	
+	self addBalanceLineToSummary.
+
+	^ summary.! !
+
+
+!SummaryPrinter methodsFor: 'report' stamp: 'LT 5/30/2022 00:53:13'!
+reportDeposit: aDeposit
+
+	| line |
+
+	line := 'Depósito por ', aDeposit value asString ,'.'.
+	summary add: line.! !
+
+!SummaryPrinter methodsFor: 'report' stamp: 'LT 5/30/2022 00:56:54'!
+reportReceiverLeg: aReceiverLeg
+
+	| line |
+
+	line := 'Entrada por transferencia de ', aReceiverLeg value asString, '.'.
+	summary add: line.! !
+
+!SummaryPrinter methodsFor: 'report' stamp: 'LT 5/30/2022 00:58:01'!
+reportSenderLeg: aSenderLeg
+
+	| line |
+
+	line := 'Salida por transferencia de ', aSenderLeg value asString, '.'.
+	summary add: line.! !
+
+!SummaryPrinter methodsFor: 'report' stamp: 'LT 5/30/2022 00:54:40'!
+reportWithdraw: aWithdraw
+
+	| line |
+
+	line := 'Extracción por ', aWithdraw value asString ,'.'.
+	summary add: line.! !
+
+
+!SummaryPrinter methodsFor: 'addLines' stamp: 'LT 5/30/2022 01:03:43'!
+addBalanceLineToSummary
+
+	summary add: ('Balance = ', account balance asString,'.').! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SummaryPrinter class' category: 'Portfolio2'!
+SummaryPrinter class
+	instanceVariableNames: ''!
+
+!SummaryPrinter class methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:00:46'!
+with: anAccount
+
+	^ self new initializeWith: anAccount.! !
 
 
 !classDefinition: #TransferNetCalculator category: 'Portfolio2'!
 Reporter subclass: #TransferNetCalculator
-	instanceVariableNames: ''
+	instanceVariableNames: 'currentTransferNet'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio2'!
 
-!TransferNetCalculator methodsFor: 'initialize' stamp: 'LT 5/29/2022 19:22:54'!
+!TransferNetCalculator methodsFor: 'initialize' stamp: 'LT 5/30/2022 00:03:16'!
 initializeWith: anAccount
 
-	account := anAccount.! !
+	account := anAccount.
+	currentTransferNet := 0.! !
+
+
+!TransferNetCalculator methodsFor: 'affectTransferNet' stamp: 'LT 5/30/2022 00:03:45'!
+depositAffectsTransferNet: aDeposit
+
+	currentTransferNet := currentTransferNet + aDeposit value.! !
+
+!TransferNetCalculator methodsFor: 'affectTransferNet' stamp: 'LT 5/30/2022 00:05:51'!
+receiverLegAffectsTransferNet: aReceiverLeg
+
+	currentTransferNet := currentTransferNet + aReceiverLeg value.! !
+
+!TransferNetCalculator methodsFor: 'affectTransferNet' stamp: 'LT 5/30/2022 00:05:10'!
+senderLegAffectsTransferNet: aSenderLeg
+
+	currentTransferNet := currentTransferNet - aSenderLeg value.! !
+
+!TransferNetCalculator methodsFor: 'affectTransferNet' stamp: 'LT 5/30/2022 00:04:25'!
+withdrawAffectsTransferNet: aWithdraw
+
+	currentTransferNet := currentTransferNet - aWithdraw value.! !
+
+
+!TransferNetCalculator methodsFor: 'calculate' stamp: 'LT 5/30/2022 00:10:29'!
+calculateTransferNet
+
+	account calculateAccountTransferNet: self.
+	
+	^ currentTransferNet.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferNetCalculator class' category: 'Portfolio2'!
+TransferNetCalculator class
+	instanceVariableNames: ''!
+
+!TransferNetCalculator class methodsFor: 'as yet unclassified' stamp: 'LT 5/30/2022 01:00:42'!
+with: anAccount
+
+	^ self new initializeWith: anAccount.! !
