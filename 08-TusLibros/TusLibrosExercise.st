@@ -5,126 +5,139 @@ TestCase subclass: #CartTest
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:32:33'!
+catalogueWithOneBook
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12.
+	
+	^ EditorialCatalogue with: books.
+	! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:34:57'!
+catalogueWithTwoBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12; add: 13.
+	
+	^ EditorialCatalogue with: books.
+	! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:33:51'!
+catalogueWithZeroBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	
+	^ EditorialCatalogue with: books.
+	! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:34:07'!
 test01CartIsEmptyWhenCreated
 
 	| cart catalogue |
 	
-	catalogue := EditorialCatalogue with: OrderedCollection new.
+	catalogue := self catalogueWithZeroBooks.
 	cart := EditorialCart for: catalogue.
 	
 	self assert: cart isEmpty.! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:39:45'!
 test02CartIsNotEmptyWhenAddedABook
 
-	| cart books catalogue |
+	| cart catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12.
+	catalogue := self catalogueWithOneBook.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
-	
 	cart addBookWithISBN: 12 quantity: 1.
 	
 	self deny: cart isEmpty.! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:39:53'!
 test03CartHasOnlyTheBookAdded
 
-	| cart expectedBooks books catalogue |
+	| cart expectedBooks catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12.
+	catalogue := self catalogueWithOneBook.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
-	
 	cart addBookWithISBN: 12 quantity: 1.
 	
 	expectedBooks := #(12).
 	
 	self assert: (expectedBooks) equals: (cart books).! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:23'!
 test04CartHasOnlyTheBooksAdded
 
-	| cart expectedBooks books catalogue |
+	| cart expectedBooks catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12; add: 13.
+	catalogue := self catalogueWithTwoBooks.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
-	
 	cart addBookWithISBN: 12 quantity: 1; addBookWithISBN: 13 quantity: 1.
 	
 	expectedBooks := #(12 13).
 	
 	self assert: expectedBooks equals: (cart books).! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:30'!
 test05CanNotAddABookThatIsNotInTheCatalogue
 
-	| cart catalogue books |
+	| cart catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12.
+	catalogue := self catalogueWithOneBook.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
 	
 	self 
 		should: [ cart addBookWithISBN: 13 quantity: 1 ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error 
 		withExceptionDo: [ :anError |
 			self assert: EditorialCart canNotAddABookOutsideOfTheCatalogueErrorMessage equals: anError messageText.
 			self assert: cart isEmpty.
 			]! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:38'!
 test06ABookAddedMoreThanOnceQuantityInACartIsTheSumOfTheAddedAmount
 
-	| cart catalogue books |
+	| cart catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12.
+	catalogue := self catalogueWithOneBook.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
-	
 	cart addBookWithISBN: 12 quantity: 1.
 	cart addBookWithISBN: 12 quantity: 4.
 	
 	self assert: 5 equals: (cart quantityOf: 12).
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:45'!
 test07ABookAddedOnceQuantityInACartIsTheAddedAmount
 
-	| cart catalogue books |
+	| cart catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12.
+	catalogue := self catalogueWithOneBook.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
-	
 	cart addBookWithISBN: 12 quantity: 1.
 	
 	self assert: 1 equals: (cart quantityOf: 12).
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'EE 6/4/2022 16:48:57'!
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:55'!
 test08ACartCanNotAddNonPositiveQuantityOfABook
 
-	| cart catalogue books |
+	| cart catalogue |
 	
-	books := OrderedCollection new.
-	books add: 12.
+	catalogue := self catalogueWithOneBook.
 	
-	catalogue := EditorialCatalogue with: books.
 	cart := EditorialCart for: catalogue.
 	
 	self 
@@ -134,6 +147,63 @@ test08ACartCanNotAddNonPositiveQuantityOfABook
 			self assert: EditorialCart canNotAddNonPositiveQuantityOfABookErrorMessage equals: anError messageText.
 			self assert: cart isEmpty.
 			]! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:01'!
+test09CannotAskTheQuantityOfABookThatHasNotBeenAdd
+
+	| cart catalogue |
+
+	catalogue := self catalogueWithOneBook.
+	
+	cart := EditorialCart for: catalogue.
+	
+	self 
+		should: [ cart quantityOf: 12 ]
+		raise: Error 
+		withExceptionDo: [ :anError |
+			self assert: EditorialCart bookHasNotBeenAddToTheCartMessage equals: anError messageText.
+			self assert: cart isEmpty.
+			].
+	! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:07'!
+test10CartListOfAnEmptyCartShouldReturnEmptyString
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := EditorialCart for: catalogue.
+	
+	self assert: '' equals: cart list.
+	! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:14'!
+test11CartListOfACartWithOneBookShouldReturnTheBookISBNAndItsQuantity
+
+	| cart catalogue |
+
+	catalogue := self catalogueWithTwoBooks.
+	
+	cart := EditorialCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1. 
+	
+	self assert: '|12|1' equals: cart list.
+	! !
+
+!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:21'!
+test12CartListOfACartWithMultipleBooksShouldReturnItsBooksISBNAndQuantity
+
+	| cart catalogue |
+
+	catalogue := self catalogueWithTwoBooks.
+	
+	cart := EditorialCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1. 
+	cart addBookWithISBN: 13 quantity: 2. 
+	
+	self assert: '|12|1|13|2' equals: cart list
+	! !
 
 
 !classDefinition: #EditorialCart category: 'TusLibrosExercise'!
@@ -149,12 +219,23 @@ isEmpty
 	^ books isEmpty.! !
 
 
-!EditorialCart methodsFor: 'assertions' stamp: 'EE 6/4/2022 16:45:11'!
+!EditorialCart methodsFor: 'assertions' stamp: 'LT 6/5/2022 16:15:25'!
+assertBookIsIncludedInCart: anISBN
+
+	((books keys) includes: anISBN) ifFalse: [
+		self class error: ( self class bookHasNotBeenAddToTheCart).
+	].! !
+
+!EditorialCart methodsFor: 'assertions' stamp: 'LT 6/5/2022 16:15:16'!
 assertCanAddBook: anISBN quantity: aQuantity 
 
-	(catalogue has: anISBN) ifFalse: [ self class canNotAddABookOutsideOfTheCatalogue].
+	(catalogue has: anISBN) ifFalse: [ 
+		self class canNotAddABookOutsideOfTheCatalogue
+	].
 	
-	(aQuantity > 0) ifFalse: [ self class canNotAddNonPositiveQuantityOfABook ].
+	(aQuantity > 0) ifFalse: [ 
+		self class canNotAddNonPositiveQuantityOfABook 
+	].
 	
 ! !
 
@@ -183,10 +264,29 @@ books
 	
 	^ books keys.! !
 
-!EditorialCart methodsFor: 'accessing' stamp: 'EE 6/4/2022 16:34:56'!
+!EditorialCart methodsFor: 'accessing' stamp: 'LT 6/5/2022 16:14:44'!
 quantityOf: anISBN
+
+	self assertBookIsIncludedInCart: anISBN.
 	
 	^books at: anISBN.! !
+
+
+!EditorialCart methodsFor: 'printing' stamp: 'LT 6/5/2022 15:58:32'!
+list
+
+	| list |
+
+	list := ''.
+	
+	(books keys) do: [ :key |
+		
+		list := list, '|'	, key asString.
+		list := list, '|', ((books at: key) asString).
+		
+	].
+
+	^ list.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -200,6 +300,11 @@ for: aCatalogue
 	^ self new initializeFor: aCatalogue ! !
 
 
+!EditorialCart class methodsFor: 'error' stamp: 'LT 6/5/2022 15:02:02'!
+bookHasNotBeenAddToTheCart
+
+	self error: self bookHasNotBeenAddToTheCartMessage.! !
+
 !EditorialCart class methodsFor: 'error' stamp: 'EE 6/4/2022 16:12:15'!
 canNotAddABookOutsideOfTheCatalogue
 
@@ -210,6 +315,11 @@ canNotAddNonPositiveQuantityOfABook
 
 	self error: self canNotAddNonPositiveQuantityOfABookErrorMessage.! !
 
+
+!EditorialCart class methodsFor: 'error messages' stamp: 'LT 6/5/2022 15:01:36'!
+bookHasNotBeenAddToTheCartMessage
+	
+	^ 'The book has not been add to the cart'! !
 
 !EditorialCart class methodsFor: 'error messages' stamp: 'EE 6/4/2022 16:01:26'!
 canNotAddABookOutsideOfTheCatalogueErrorMessage
