@@ -1,43 +1,11 @@
-!classDefinition: #CartTest category: 'TusLibrosExercise'!
-TestCase subclass: #CartTest
+!classDefinition: #EditorialCartTest category: 'TusLibrosExercise'!
+TestCase subclass: #EditorialCartTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:32:33'!
-catalogueWithOneBook
-
-	| books |
-	
-	books := OrderedCollection new.
-	books add: 12.
-	
-	^ EditorialCatalogue with: books.
-	! !
-
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:34:57'!
-catalogueWithTwoBooks
-
-	| books |
-	
-	books := OrderedCollection new.
-	books add: 12; add: 13.
-	
-	^ EditorialCatalogue with: books.
-	! !
-
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:33:51'!
-catalogueWithZeroBooks
-
-	| books |
-	
-	books := OrderedCollection new.
-	
-	^ EditorialCatalogue with: books.
-	! !
-
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:34:07'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:34:07'!
 test01CartIsEmptyWhenCreated
 
 	| cart catalogue |
@@ -47,7 +15,7 @@ test01CartIsEmptyWhenCreated
 	
 	self assert: cart isEmpty.! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:39:45'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:39:45'!
 test02CartIsNotEmptyWhenAddedABook
 
 	| cart catalogue |
@@ -59,7 +27,7 @@ test02CartIsNotEmptyWhenAddedABook
 	
 	self deny: cart isEmpty.! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:39:53'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:39:53'!
 test03CartHasOnlyTheBookAdded
 
 	| cart expectedBooks catalogue |
@@ -73,7 +41,7 @@ test03CartHasOnlyTheBookAdded
 	
 	self assert: (expectedBooks) equals: (cart books).! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:23'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:23'!
 test04CartHasOnlyTheBooksAdded
 
 	| cart expectedBooks catalogue |
@@ -87,7 +55,7 @@ test04CartHasOnlyTheBooksAdded
 	
 	self assert: expectedBooks equals: (cart books).! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:30'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:30'!
 test05CanNotAddABookThatIsNotInTheCatalogue
 
 	| cart catalogue |
@@ -104,7 +72,7 @@ test05CanNotAddABookThatIsNotInTheCatalogue
 			self assert: cart isEmpty.
 			]! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:38'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:38'!
 test06ABookAddedMoreThanOnceQuantityInACartIsTheSumOfTheAddedAmount
 
 	| cart catalogue |
@@ -118,7 +86,7 @@ test06ABookAddedMoreThanOnceQuantityInACartIsTheSumOfTheAddedAmount
 	self assert: 5 equals: (cart quantityOf: 12).
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:45'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:45'!
 test07ABookAddedOnceQuantityInACartIsTheAddedAmount
 
 	| cart catalogue |
@@ -131,7 +99,7 @@ test07ABookAddedOnceQuantityInACartIsTheAddedAmount
 	self assert: 1 equals: (cart quantityOf: 12).
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:55'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:41:55'!
 test08ACartCanNotAddNonPositiveQuantityOfABook
 
 	| cart catalogue |
@@ -148,7 +116,7 @@ test08ACartCanNotAddNonPositiveQuantityOfABook
 			self assert: cart isEmpty.
 			]! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:01'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:01'!
 test09CannotAskTheQuantityOfABookThatHasNotBeenAdd
 
 	| cart catalogue |
@@ -166,7 +134,7 @@ test09CannotAskTheQuantityOfABookThatHasNotBeenAdd
 			].
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:07'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 15:18:13'!
 test10CartListOfAnEmptyCartShouldReturnEmptyString
 
 	| cart catalogue |
@@ -175,10 +143,10 @@ test10CartListOfAnEmptyCartShouldReturnEmptyString
 	
 	cart := EditorialCart for: catalogue.
 	
-	self assert: '' equals: cart list.
+	self assert: '' equals: cart asStringList.
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:14'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 15:18:13'!
 test11CartListOfACartWithOneBookShouldReturnTheBookISBNAndItsQuantity
 
 	| cart catalogue |
@@ -188,10 +156,10 @@ test11CartListOfACartWithOneBookShouldReturnTheBookISBNAndItsQuantity
 	cart := EditorialCart for: catalogue.
 	cart addBookWithISBN: 12 quantity: 1. 
 	
-	self assert: '|12|1' equals: cart list.
+	self assert: '|12|1' equals: cart asStringList.
 	! !
 
-!CartTest methodsFor: 'tests' stamp: 'LT 6/5/2022 16:42:21'!
+!EditorialCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 15:18:13'!
 test12CartListOfACartWithMultipleBooksShouldReturnItsBooksISBNAndQuantity
 
 	| cart catalogue |
@@ -202,7 +170,40 @@ test12CartListOfACartWithMultipleBooksShouldReturnItsBooksISBNAndQuantity
 	cart addBookWithISBN: 12 quantity: 1. 
 	cart addBookWithISBN: 13 quantity: 2. 
 	
-	self assert: '|12|1|13|2' equals: cart list
+	self assert: '|12|1|13|2' equals: cart asStringList
+	! !
+
+
+!EditorialCartTest methodsFor: 'instance creation' stamp: 'LT 6/5/2022 16:32:33'!
+catalogueWithOneBook
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12.
+	
+	^ EditorialCatalogue with: books.
+	! !
+
+!EditorialCartTest methodsFor: 'instance creation' stamp: 'LT 6/5/2022 16:34:57'!
+catalogueWithTwoBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12; add: 13.
+	
+	^ EditorialCatalogue with: books.
+	! !
+
+!EditorialCartTest methodsFor: 'instance creation' stamp: 'LT 6/5/2022 16:33:51'!
+catalogueWithZeroBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	
+	^ EditorialCatalogue with: books.
 	! !
 
 
@@ -272,8 +273,8 @@ quantityOf: anISBN
 	^books at: anISBN.! !
 
 
-!EditorialCart methodsFor: 'printing' stamp: 'LT 6/5/2022 15:58:32'!
-list
+!EditorialCart methodsFor: 'converting' stamp: 'EE 6/6/2022 15:18:13'!
+asStringList
 
 	| list |
 
@@ -334,7 +335,7 @@ canNotAddNonPositiveQuantityOfABookErrorMessage
 
 !classDefinition: #EditorialCatalogue category: 'TusLibrosExercise'!
 Object subclass: #EditorialCatalogue
-	instanceVariableNames: 'orderedCollection books'
+	instanceVariableNames: 'books'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
