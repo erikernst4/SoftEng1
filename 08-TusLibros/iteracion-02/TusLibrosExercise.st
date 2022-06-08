@@ -1,5 +1,106 @@
+!classDefinition: #CreditCardTest category: 'TusLibrosExercise'!
+TestCase subclass: #CreditCardTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'EE 6/8/2022 17:36:43'!
+test01ACreditCardExpirationDateIsTheDateGivenInTheCreation
+
+	| card |
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current) numbered: 4444444444444444.
+	
+	self assert: (GregorianMonthOfYear current) equals: card expirationDate! !
+
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'EE 6/8/2022 17:41:44'!
+test02CanNotCreateACreditCardWithoutAnOwnerName
+
+	self 
+		should: [CreditCard for: '' validUntil: (GregorianMonthOfYear current) numbered: 4444444444444444.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: CreditCard canNotCreateACardWithAnEmptyNameErrorMessage equals: anError messageText.
+			].! !
+
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'EE 6/8/2022 18:05:14'!
+test03CanNotCreateACreditCardWithAnInvalidNumber
+
+	self 
+		should: [CreditCard for: 'Felipe Pettinato' validUntil: (GregorianMonthOfYear current) numbered: 911.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: CreditCard canNotCreateACreditCardWithAnInvalidNumberErrorMessage equals: anError messageText.
+			].! !
+
+
+!classDefinition: #MerchantProcessorSimulator category: 'TusLibrosExercise'!
+TestCase subclass: #MerchantProcessorSimulator
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'EE 6/8/2022 18:37:00'!
+test01MerchantProcessorDebitReturnsSuccessWhenDebitingWithValidCard
+
+	| merchantProcessor returnMessage |
+	
+	merchantProcessor  := MerchantProcessorSimulator new.
+	
+	returnMessage := merchantProcessor debit: 44.44 from: 4444444444444444 withExpirationDate: (GregorianMonthOfYear current next) ownedBy: 'El Diego'.
+	
+	self assert: 'Success' equals: returnMessage.! !
+
+
+!MerchantProcessorSimulator methodsFor: 'debit' stamp: 'EE 6/8/2022 18:36:54'!
+debit: anAmountOfMoney from: aCreditCardNumber withExpirationDate: aGregorianMonthOfYear ownedBy: aName 
+	
+	^'Success'! !
+
+
+!classDefinition: #PublisherTest category: 'TusLibrosExercise'!
+TestCase subclass: #PublisherTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!PublisherTest methodsFor: 'instance creation' stamp: 'EE 6/8/2022 17:20:06'!
+catalogueWithOneBook
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12.
+	
+	^ books.
+	! !
+
+!PublisherTest methodsFor: 'instance creation' stamp: 'EE 6/8/2022 17:20:15'!
+catalogueWithTwoBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12; add: 13.
+	
+	^ books.
+	! !
+
+!PublisherTest methodsFor: 'instance creation' stamp: 'EE 6/8/2022 17:20:19'!
+catalogueWithZeroBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	
+	^ books.
+	! !
+
+
 !classDefinition: #PublisherCartTest category: 'TusLibrosExercise'!
-TestCase subclass: #PublisherCartTest
+PublisherTest subclass: #PublisherCartTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -191,56 +292,24 @@ test13ACartCanNotAddANonIntegerQuantity
 			]! !
 
 
-!PublisherCartTest methodsFor: 'instance creation' stamp: 'EE 6/6/2022 17:22:19'!
-catalogueWithOneBook
-
-	| books |
-	
-	books := OrderedCollection new.
-	books add: 12.
-	
-	^ books.
-	! !
-
-!PublisherCartTest methodsFor: 'instance creation' stamp: 'EE 6/6/2022 17:22:25'!
-catalogueWithTwoBooks
-
-	| books |
-	
-	books := OrderedCollection new.
-	books add: 12; add: 13.
-	
-	^ books.
-	! !
-
-!PublisherCartTest methodsFor: 'instance creation' stamp: 'EE 6/6/2022 17:22:32'!
-catalogueWithZeroBooks
-
-	| books |
-	
-	books := OrderedCollection new.
-	
-	^ books.
-	! !
-
 
 !classDefinition: #PublisherCashierTest category: 'TusLibrosExercise'!
-TestCase subclass: #PublisherCashierTest
+PublisherTest subclass: #PublisherCashierTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:45:39'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
 test01ACashierCantMakeTheCheckoutOfAnEmptyCart
 
 	| cashier cart card date |
 	
 	cart := PublisherCart for: (OrderedCollection new).
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
 	
-	date := Month month: 6 year: 2022.
+	date := GregorianMonthOfYear current.
 	
 	cashier := PublisherCashier for: cart withPrices: (Dictionary new) withCard: card on: date.
 	
@@ -252,7 +321,7 @@ test01ACashierCantMakeTheCheckoutOfAnEmptyCart
 			self assert: 0 equals: cashier amountPaid.
 			].! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:47:51'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
 test02ACashierAmountPaidAfterCheckoutIsThePriceOfTheBookMultipliedForItsQuantity
 
 	| cashier cart catalogue prices card date |
@@ -263,16 +332,16 @@ test02ACashierAmountPaidAfterCheckoutIsThePriceOfTheBookMultipliedForItsQuantity
 	prices := Dictionary new. 
 	prices at: 12 put: 4.
 	
-	date := Month month: 6 year: 2022.
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	date := GregorianMonthOfYear current.
 	
 	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
 	
 	cashier checkout.
 	self assert: (4 * 2) equals: cashier amountPaid.! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:48:45'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
 test03ACashierAmountPaidAfterCheckoutIsSumOfThePriceOfTheBookMultipliedForItsQuantity
 
 	| cashier cart catalogue prices card date |
@@ -284,16 +353,16 @@ test03ACashierAmountPaidAfterCheckoutIsSumOfThePriceOfTheBookMultipliedForItsQua
 	prices := Dictionary new.
 	prices at: 12 put: 4 ; at: 13 put: 44.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
 	
-	date := Month month: 6 year: 2022.
+	date := GregorianMonthOfYear current.
 	
 	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
 	
 	cashier checkout.
 	self assert: (4 * 2 + (1 * 44)) equals: cashier amountPaid.! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:49:03'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
 test04ACashierMustKnowThePriceForEveryCartBook
 
 	| cart catalogue prices card date |
@@ -304,8 +373,8 @@ test04ACashierMustKnowThePriceForEveryCartBook
 	prices := Dictionary new. 
 	prices at: 13 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
-	date := Month month: 6 year: 2022.	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	date := GregorianMonthOfYear current.
 	
 	self 
 		should: [PublisherCashier for: cart withPrices: prices withCard: card on: date.]
@@ -314,7 +383,7 @@ test04ACashierMustKnowThePriceForEveryCartBook
 			self assert: PublisherCashier canNotCreateACashierThatDoesntHaveAllThePricesForACartErrorMessage equals: anError messageText.
 			].! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:49:20'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
 test05ACashierCanNotDoACheckoutMoreThanOnce
 
 	| cart catalogue prices cashier card date |
@@ -325,8 +394,8 @@ test05ACashierCanNotDoACheckoutMoreThanOnce
 	prices := Dictionary new. 
 	prices at: 12 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
-	date := Month month: 6 year: 2022.	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	date := GregorianMonthOfYear current.
 	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
 	
 	cashier checkout.
@@ -339,7 +408,7 @@ test05ACashierCanNotDoACheckoutMoreThanOnce
 			self assert: (4 * 2) equals: cashier amountPaid.
 			].! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:49:31'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
 test06ACashierCanNotDoTheCheckoutWithAnExpiredCard
 
 	| cashier cart catalogue prices card date |
@@ -350,8 +419,8 @@ test06ACashierCanNotDoTheCheckoutWithAnExpiredCard
 	prices := Dictionary new. 
 	prices at: 12 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2021).
-	date := Month month: 6 year: 2022.	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current previous) numbered: 4444444444444444.
+	date := GregorianMonthOfYear current.
 	
 	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
 	
@@ -366,23 +435,39 @@ test06ACashierCanNotDoTheCheckoutWithAnExpiredCard
 
 !classDefinition: #CreditCard category: 'TusLibrosExercise'!
 Object subclass: #CreditCard
-	instanceVariableNames: 'name expirationDate gregorianMonthOfYear'
+	instanceVariableNames: 'ownerName expirationDate gregorianMonthOfYear number'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!CreditCard methodsFor: 'initialization' stamp: 'EE 6/6/2022 20:52:53'!
+!CreditCard methodsFor: 'initialization' stamp: 'EE 6/8/2022 17:33:12'!
 initializeFor: aName validUntil: aGregorianMonthOfYear 
 	
-	name := aName.
+	ownerName := aName.
 	expirationDate := aGregorianMonthOfYear.! !
 
 
-!CreditCard methodsFor: 'testing' stamp: 'EE 6/6/2022 21:54:30'!
+!CreditCard methodsFor: 'testing' stamp: 'EE 6/8/2022 17:10:22'!
 hasExpiredOn: aDate
 
-	^ aDate monthOfYear > expirationDate
+	^ aDate > expirationDate
 ! !
+
+
+!CreditCard methodsFor: 'accessing' stamp: 'EE 6/8/2022 17:33:33'!
+expirationDate
+
+	^ expirationDate ! !
+
+!CreditCard methodsFor: 'accessing' stamp: 'EE 6/8/2022 17:33:57'!
+number
+
+	^ number ! !
+
+!CreditCard methodsFor: 'accessing' stamp: 'EE 6/8/2022 17:33:45'!
+ownerName
+
+	^ ownerName ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -390,10 +475,50 @@ hasExpiredOn: aDate
 CreditCard class
 	instanceVariableNames: ''!
 
-!CreditCard class methodsFor: 'instance creation' stamp: 'EE 6/6/2022 20:52:32'!
-for: aName validUntil: aGregorianMonthOfYear 
+!CreditCard class methodsFor: 'instance creation' stamp: 'EE 6/8/2022 17:45:44'!
+for: aName validUntil: aGregorianMonthOfYear numbered: aSixteenDigitNumber
+
+	self assertNameNotEmpty: aName.
+	
+	self assertNumberIsValid: aSixteenDigitNumber.
 	
 	^self new initializeFor: aName validUntil: aGregorianMonthOfYear ! !
+
+
+!CreditCard class methodsFor: 'errors' stamp: 'EE 6/8/2022 17:41:31'!
+canNotCreateACardWithAnEmptyName
+	
+	self error: self canNotCreateACardWithAnEmptyNameErrorMessage! !
+
+!CreditCard class methodsFor: 'errors' stamp: 'EE 6/8/2022 17:58:59'!
+canNotCreateACreditCardWithAnInvalidNumber
+	
+	self error: self canNotCreateACreditCardWithAnInvalidNumberErrorMessage! !
+
+
+!CreditCard class methodsFor: 'error messages' stamp: 'EE 6/8/2022 17:41:44'!
+canNotCreateACardWithAnEmptyNameErrorMessage
+
+	^'Can not create a credit card with an empty name'! !
+
+!CreditCard class methodsFor: 'error messages' stamp: 'EE 6/8/2022 17:59:37'!
+canNotCreateACreditCardWithAnInvalidNumberErrorMessage
+	
+	^'Invalid number: creation of credit card failed'! !
+
+
+!CreditCard class methodsFor: 'assertions' stamp: 'EE 6/8/2022 17:43:22'!
+assertNameNotEmpty: aString 
+	
+	(aString isEmpty) ifTrue: [self canNotCreateACardWithAnEmptyName ].! !
+
+!CreditCard class methodsFor: 'assertions' stamp: 'EE 6/8/2022 18:02:46'!
+assertNumberIsValid: anObject
+
+	(((anObject isInteger not) or: [(anObject isInteger) and: [anObject < 0]]) or: [((anObject isInteger) and: [anObject > 0]) and: [(anObject decimalDigitLength = 16) not]])
+		ifTrue: [self canNotCreateACreditCardWithAnInvalidNumber].
+	
+	! !
 
 
 !classDefinition: #PublisherCart category: 'TusLibrosExercise'!
@@ -550,16 +675,16 @@ canNotAddNonPositiveQuantityOfABookErrorMessage
 
 !classDefinition: #PublisherCashier category: 'TusLibrosExercise'!
 Object subclass: #PublisherCashier
-	instanceVariableNames: 'publisherCart amountPaid prices alreadyPaid cataloguePrices card date'
+	instanceVariableNames: 'publisherCart amountPaid alreadyPaid pricesCatalogue card date'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!PublisherCashier methodsFor: 'initialization' stamp: 'EE 6/6/2022 21:50:14'!
+!PublisherCashier methodsFor: 'initialization' stamp: 'EE 6/8/2022 17:15:57'!
 initializeFor: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate 
 	
 	publisherCart := aPublisherCart.
-	cataloguePrices := aCataloguePrices.
+	pricesCatalogue := aCataloguePrices.
 	card := aCard.
 	alreadyPaid := false.
 	amountPaid := 0.
@@ -589,16 +714,21 @@ assertCartIsNotEmpty
 	(publisherCart isEmpty) ifTrue: [self class canNotDoTheCheckoutToAnEmptyCart]! !
 
 
-!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/6/2022 20:57:01'!
+!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/8/2022 17:13:45'!
 checkout	
 
 	self assertCanMakeTheCheckout.
 	
 	self assertCardIsValid.
 	
-	amountPaid := publisherCart sum: [ :book | ((publisherCart quantityOf: book) * (prices at: book))].
+	amountPaid := publisherCart sum: [ :book | (self priceOfBook: book) * (publisherCart quantityOf: book) ].
 	
 	alreadyPaid := true.! !
+
+!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/8/2022 17:16:09'!
+priceOfBook: aBook 
+	
+	^ pricesCatalogue at: aBook! !
 
 
 !PublisherCashier methodsFor: 'accessing' stamp: 'EE 6/6/2022 19:22:12'!
