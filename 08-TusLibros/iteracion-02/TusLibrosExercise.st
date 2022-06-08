@@ -1,0 +1,676 @@
+!classDefinition: #PublisherCartTest category: 'TusLibrosExercise'!
+TestCase subclass: #PublisherCartTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test01CartIsEmptyWhenCreated
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithZeroBooks.
+	cart := PublisherCart for: catalogue.
+	
+	self assert: cart isEmpty.! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test02CartIsNotEmptyWhenAddedABook
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1.
+	
+	self deny: cart isEmpty.! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test03CartHasOnlyTheBookAdded
+
+	| cart expectedBooks catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1.
+	
+	expectedBooks := Set with:12.
+	
+	self assert: (expectedBooks) equals: (cart books).! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test04CartHasOnlyTheBooksAdded
+
+	| cart expectedBooks catalogue |
+	
+	catalogue := self catalogueWithTwoBooks.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1; addBookWithISBN: 13 quantity: 1.
+	
+	expectedBooks := Set with:12 with:13.
+	
+	self assert: expectedBooks equals: (cart books).! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test05CanNotAddABookThatIsNotInTheCatalogue
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	
+	self 
+		should: [ cart addBookWithISBN: 13 quantity: 1 ]
+		raise: Error 
+		withExceptionDo: [ :anError |
+			self assert: PublisherCart canNotAddABookOutsideOfTheCatalogueErrorMessage equals: anError messageText.
+			self assert: cart isEmpty.
+			]! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test06ABookAddedMoreThanOnceQuantityInACartIsTheSumOfTheAddedAmount
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1.
+	cart addBookWithISBN: 12 quantity: 4.
+	
+	self assert: 5 equals: (cart quantityOf: 12).
+	! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test07ABookAddedOnceQuantityInACartIsTheAddedAmount
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1.
+	
+	self assert: 1 equals: (cart quantityOf: 12).
+	! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test08ACartCanNotAddNonPositiveQuantityOfABook
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	
+	self 
+		should: [ cart addBookWithISBN: 12 quantity: -1. ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: PublisherCart canNotAddNonPositiveQuantityOfABookErrorMessage equals: anError messageText.
+			self assert: cart isEmpty.
+			]! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test09CannotAskTheQuantityOfABookThatHasNotBeenAdd
+
+	| cart catalogue |
+
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	
+	self 
+		should: [ cart quantityOf: 12 ]
+		raise: Error 
+		withExceptionDo: [ :anError |
+			self assert: PublisherCart bookHasNotBeenAddToTheCartMessage equals: anError messageText.
+			self assert: cart isEmpty.
+			].
+	! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test10CartListOfAnEmptyCartShouldReturnEmptyString
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	
+	self assert: '' equals: cart asStringList.
+	! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test11CartListOfACartWithOneBookShouldReturnTheBookISBNAndItsQuantity
+
+	| cart catalogue |
+
+	catalogue := self catalogueWithTwoBooks.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1. 
+	
+	self assert: '|12|1' equals: cart asStringList.
+	! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test12CartListOfACartWithMultipleBooksShouldReturnItsBooksISBNAndQuantity
+
+	| cart catalogue |
+
+	catalogue := self catalogueWithTwoBooks.
+	
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 1. 
+	cart addBookWithISBN: 13 quantity: 2. 
+	
+	self assert: '|12|1|13|2' equals: cart asStringList
+	! !
+
+!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+test13ACartCanNotAddANonIntegerQuantity
+
+	| cart catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+	
+	cart := PublisherCart for: catalogue.
+	
+	self 
+		should: [ cart addBookWithISBN: 12 quantity: 1.5. ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: PublisherCart canNotAddANonIntegerQuantityOfABookErrorMessage equals: anError messageText.
+			self assert: cart isEmpty.
+			]! !
+
+
+!PublisherCartTest methodsFor: 'instance creation' stamp: 'EE 6/6/2022 17:22:19'!
+catalogueWithOneBook
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12.
+	
+	^ books.
+	! !
+
+!PublisherCartTest methodsFor: 'instance creation' stamp: 'EE 6/6/2022 17:22:25'!
+catalogueWithTwoBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	books add: 12; add: 13.
+	
+	^ books.
+	! !
+
+!PublisherCartTest methodsFor: 'instance creation' stamp: 'EE 6/6/2022 17:22:32'!
+catalogueWithZeroBooks
+
+	| books |
+	
+	books := OrderedCollection new.
+	
+	^ books.
+	! !
+
+
+!classDefinition: #PublisherCashierTest category: 'TusLibrosExercise'!
+TestCase subclass: #PublisherCashierTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:45:39'!
+test01ACashierCantMakeTheCheckoutOfAnEmptyCart
+
+	| cashier cart card date |
+	
+	cart := PublisherCart for: (OrderedCollection new).
+	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	
+	date := Month month: 6 year: 2022.
+	
+	cashier := PublisherCashier for: cart withPrices: (Dictionary new) withCard: card on: date.
+	
+	self 
+		should: [cashier checkout]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: PublisherCashier canNotDoTheCheckoutToAnEmptyCartErrorMessage equals: anError messageText.
+			self assert: 0 equals: cashier amountPaid.
+			].! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:47:51'!
+test02ACashierAmountPaidAfterCheckoutIsThePriceOfTheBookMultipliedForItsQuantity
+
+	| cashier cart catalogue prices card date |
+	
+	catalogue := Set with: 12.
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 2.
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	date := Month month: 6 year: 2022.
+	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	
+	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	
+	cashier checkout.
+	self assert: (4 * 2) equals: cashier amountPaid.! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:48:45'!
+test03ACashierAmountPaidAfterCheckoutIsSumOfThePriceOfTheBookMultipliedForItsQuantity
+
+	| cashier cart catalogue prices card date |
+	
+	catalogue := Set with: 12 with: 13.
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 2; addBookWithISBN: 13 quantity: 1.
+	
+	prices := Dictionary new.
+	prices at: 12 put: 4 ; at: 13 put: 44.
+	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	
+	date := Month month: 6 year: 2022.
+	
+	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	
+	cashier checkout.
+	self assert: (4 * 2 + (1 * 44)) equals: cashier amountPaid.! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:49:03'!
+test04ACashierMustKnowThePriceForEveryCartBook
+
+	| cart catalogue prices card date |
+	
+	catalogue := Set with: 12.
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 2.
+	prices := Dictionary new. 
+	prices at: 13 put: 4.
+	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	date := Month month: 6 year: 2022.	
+	
+	self 
+		should: [PublisherCashier for: cart withPrices: prices withCard: card on: date.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: PublisherCashier canNotCreateACashierThatDoesntHaveAllThePricesForACartErrorMessage equals: anError messageText.
+			].! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:49:20'!
+test05ACashierCanNotDoACheckoutMoreThanOnce
+
+	| cart catalogue prices cashier card date |
+	
+	catalogue := Set with: 12.
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 2.
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2023).
+	date := Month month: 6 year: 2022.	
+	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	
+	cashier checkout.
+	
+	self 
+		should: [cashier checkout.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: PublisherCashier canNotMakeACheckoutMoreThanOnceErrorMessage equals: anError messageText.
+			self assert: (4 * 2) equals: cashier amountPaid.
+			].! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/6/2022 21:49:31'!
+test06ACashierCanNotDoTheCheckoutWithAnExpiredCard
+
+	| cashier cart catalogue prices card date |
+	
+	catalogue := Set with: 12.
+	cart := PublisherCart for: catalogue.
+	cart addBookWithISBN: 12 quantity: 2.
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	card := CreditCard for: 'Hernán Wilkinson' validUntil: (Month month: 11 year: 2021).
+	date := Month month: 6 year: 2022.	
+	
+	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	
+	self 
+		should: [cashier checkout.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: PublisherCashier canNotMakeACheckoutWithAnExpiredCreditCardErrorMessages equals: anError messageText.
+			self assert: 0 equals: cashier amountPaid.
+			].! !
+
+
+!classDefinition: #CreditCard category: 'TusLibrosExercise'!
+Object subclass: #CreditCard
+	instanceVariableNames: 'name expirationDate gregorianMonthOfYear'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!CreditCard methodsFor: 'initialization' stamp: 'EE 6/6/2022 20:52:53'!
+initializeFor: aName validUntil: aGregorianMonthOfYear 
+	
+	name := aName.
+	expirationDate := aGregorianMonthOfYear.! !
+
+
+!CreditCard methodsFor: 'testing' stamp: 'EE 6/6/2022 21:54:30'!
+hasExpiredOn: aDate
+
+	^ aDate monthOfYear > expirationDate
+! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CreditCard class' category: 'TusLibrosExercise'!
+CreditCard class
+	instanceVariableNames: ''!
+
+!CreditCard class methodsFor: 'instance creation' stamp: 'EE 6/6/2022 20:52:32'!
+for: aName validUntil: aGregorianMonthOfYear 
+	
+	^self new initializeFor: aName validUntil: aGregorianMonthOfYear ! !
+
+
+!classDefinition: #PublisherCart category: 'TusLibrosExercise'!
+Object subclass: #PublisherCart
+	instanceVariableNames: 'books catalogue'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!PublisherCart methodsFor: 'testing' stamp: 'EE 6/4/2022 15:50:11'!
+isEmpty
+
+	^ books isEmpty.! !
+
+
+!PublisherCart methodsFor: 'assertions' stamp: 'EE 6/6/2022 17:49:33'!
+assertBookIsIncludedInCart: anISBN
+
+	((books asSet) includes: anISBN) ifFalse: [
+		self class error: ( self class bookHasNotBeenAddToTheCart).
+	].! !
+
+!PublisherCart methodsFor: 'assertions' stamp: 'EE 6/6/2022 17:20:46'!
+assertCanAddBook: anISBN quantity: aQuantity 
+
+	self assertIsValidBook: anISBN.
+	
+	self assertIsValidQuantity: aQuantity.
+	
+! !
+
+!PublisherCart methodsFor: 'assertions' stamp: 'EE 6/6/2022 17:22:53'!
+assertIsValidBook: anISBN
+
+	^ (catalogue includes: anISBN) ifFalse: [ 
+		self class canNotAddABookOutsideOfTheCatalogue
+	]! !
+
+!PublisherCart methodsFor: 'assertions' stamp: 'EE 6/6/2022 17:42:33'!
+assertIsValidQuantity: aQuantity
+
+	(aQuantity > 0) ifFalse: [ 
+		self class canNotAddNonPositiveQuantityOfABook 
+	].
+
+	(aQuantity isInteger) ifFalse: [ self class canNotAddANonIntegerQuantityOfABook].! !
+
+
+!PublisherCart methodsFor: 'adding' stamp: 'EE 6/6/2022 17:46:03'!
+addBookWithISBN: anISBN quantity: aQuantity
+
+	
+	
+	self assertCanAddBook: anISBN quantity: aQuantity.
+	
+	books add: anISBN withOccurrences: aQuantity.! !
+
+
+!PublisherCart methodsFor: 'initialization' stamp: 'EE 6/6/2022 17:45:33'!
+initializeFor: aCatalogue
+
+	books := Bag new.
+	catalogue := aCatalogue.! !
+
+
+!PublisherCart methodsFor: 'accessing' stamp: 'EE 6/6/2022 17:48:26'!
+books
+	
+	^ books asSet.! !
+
+!PublisherCart methodsFor: 'accessing' stamp: 'EE 6/6/2022 17:50:24'!
+quantityOf: anISBN
+
+	self assertBookIsIncludedInCart: anISBN.
+	
+	^books occurrencesOf: anISBN.! !
+
+
+!PublisherCart methodsFor: 'converting' stamp: 'EE 6/6/2022 17:50:59'!
+asStringList
+
+	| list |
+
+	list := ''.
+	
+	(books asSet) do: [ :key |
+		
+		list := list, '|'	, key asString.
+		list := list, '|', ((books occurrencesOf: key) asString).
+		
+	].
+
+	^ list.! !
+
+
+!PublisherCart methodsFor: 'enumerating' stamp: 'EE 6/6/2022 20:42:28'!
+sum: aClosure
+
+	^ books asSet sum: aClosure.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PublisherCart class' category: 'TusLibrosExercise'!
+PublisherCart class
+	instanceVariableNames: ''!
+
+!PublisherCart class methodsFor: 'instance creation' stamp: 'EE 6/4/2022 16:00:03'!
+for: aCatalogue
+
+	^ self new initializeFor: aCatalogue ! !
+
+
+!PublisherCart class methodsFor: 'error' stamp: 'LT 6/5/2022 15:02:02'!
+bookHasNotBeenAddToTheCart
+
+	self error: self bookHasNotBeenAddToTheCartMessage.! !
+
+!PublisherCart class methodsFor: 'error' stamp: 'EE 6/4/2022 16:12:15'!
+canNotAddABookOutsideOfTheCatalogue
+
+	self error: self canNotAddABookOutsideOfTheCatalogueErrorMessage.! !
+
+!PublisherCart class methodsFor: 'error' stamp: 'EE 6/6/2022 17:40:00'!
+canNotAddANonIntegerQuantityOfABook
+
+	self error: self canNotAddANonIntegerQuantityOfABookErrorMessage.! !
+
+!PublisherCart class methodsFor: 'error' stamp: 'EE 6/4/2022 16:38:48'!
+canNotAddNonPositiveQuantityOfABook
+
+	self error: self canNotAddNonPositiveQuantityOfABookErrorMessage.! !
+
+
+!PublisherCart class methodsFor: 'error messages' stamp: 'LT 6/5/2022 15:01:36'!
+bookHasNotBeenAddToTheCartMessage
+	
+	^ 'The book has not been add to the cart'! !
+
+!PublisherCart class methodsFor: 'error messages' stamp: 'EE 6/4/2022 16:01:26'!
+canNotAddABookOutsideOfTheCatalogueErrorMessage
+
+	^ 'Can not add a book that is not on the catalogue'! !
+
+!PublisherCart class methodsFor: 'error messages' stamp: 'EE 6/6/2022 17:39:41'!
+canNotAddANonIntegerQuantityOfABookErrorMessage
+
+	^'Quantity must be integer'! !
+
+!PublisherCart class methodsFor: 'error messages' stamp: 'EE 6/4/2022 16:38:30'!
+canNotAddNonPositiveQuantityOfABookErrorMessage
+	
+	^ 'Can not add a non positive quantity of a book'! !
+
+
+!classDefinition: #PublisherCashier category: 'TusLibrosExercise'!
+Object subclass: #PublisherCashier
+	instanceVariableNames: 'publisherCart amountPaid prices alreadyPaid cataloguePrices card date'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!PublisherCashier methodsFor: 'initialization' stamp: 'EE 6/6/2022 21:50:14'!
+initializeFor: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate 
+	
+	publisherCart := aPublisherCart.
+	cataloguePrices := aCataloguePrices.
+	card := aCard.
+	alreadyPaid := false.
+	amountPaid := 0.
+	date := aDate.! !
+
+
+!PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 21:16:27'!
+assertAlreadyPaid
+
+	(alreadyPaid) ifTrue: [self class canNotMakeACheckoutMoreThanOnce]! !
+
+!PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 20:22:01'!
+assertCanMakeTheCheckout
+
+	self assertCartIsNotEmpty.
+	
+	self assertAlreadyPaid! !
+
+!PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 21:43:43'!
+assertCardIsValid
+	
+	(card hasExpiredOn: date ) ifTrue: [self class canNotMakeACheckoutWithAnExpiredCreditCard ]! !
+
+!PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 21:07:13'!
+assertCartIsNotEmpty
+
+	(publisherCart isEmpty) ifTrue: [self class canNotDoTheCheckoutToAnEmptyCart]! !
+
+
+!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/6/2022 20:57:01'!
+checkout	
+
+	self assertCanMakeTheCheckout.
+	
+	self assertCardIsValid.
+	
+	amountPaid := publisherCart sum: [ :book | ((publisherCart quantityOf: book) * (prices at: book))].
+	
+	alreadyPaid := true.! !
+
+
+!PublisherCashier methodsFor: 'accessing' stamp: 'EE 6/6/2022 19:22:12'!
+amountPaid
+	
+	^ amountPaid! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PublisherCashier class' category: 'TusLibrosExercise'!
+PublisherCashier class
+	instanceVariableNames: ''!
+
+!PublisherCashier class methodsFor: 'instance creation' stamp: 'EE 6/6/2022 21:43:59'!
+for: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate
+	
+	self assertThereIsAPriceIn: aCataloguePrices forAllCartBooks: (aPublisherCart books). 
+	
+	^self new initializeFor: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate! !
+
+
+!PublisherCashier class methodsFor: 'errors' stamp: 'EE 6/6/2022 19:41:42'!
+canNotCreateACashierThatDoesntHaveAllThePricesForACart
+	
+	self error: self canNotCreateACashierThatDoesntHaveAllThePricesForACartErrorMessage! !
+
+!PublisherCashier class methodsFor: 'errors' stamp: 'EE 6/6/2022 18:54:47'!
+canNotDoTheCheckoutToAnEmptyCart
+	
+	self error: self canNotDoTheCheckoutToAnEmptyCartErrorMessage! !
+
+!PublisherCashier class methodsFor: 'errors' stamp: 'EE 6/6/2022 20:15:33'!
+canNotMakeACheckoutMoreThanOnce
+	
+	self error: self canNotMakeACheckoutMoreThanOnceErrorMessage! !
+
+!PublisherCashier class methodsFor: 'errors' stamp: 'EE 6/6/2022 20:55:53'!
+canNotMakeACheckoutWithAnExpiredCreditCard
+	
+	self error: self canNotMakeACheckoutWithAnExpiredCreditCardErrorMessages ! !
+
+
+!PublisherCashier class methodsFor: 'assertions' stamp: 'EE 6/6/2022 19:50:39'!
+assertThereIsAPriceIn: aCatalogPrices forAllCartBooks: aCartBooks
+
+	| booksAreIncluded |
+	
+	booksAreIncluded := true.
+	
+	aCartBooks do: [:aBook | booksAreIncluded := booksAreIncluded and: [aCatalogPrices keys includes: aBook]].
+	
+	booksAreIncluded ifFalse: [self canNotCreateACashierThatDoesntHaveAllThePricesForACart ].! !
+
+
+!PublisherCashier class methodsFor: 'error messages' stamp: 'EE 6/6/2022 19:42:18'!
+canNotCreateACashierThatDoesntHaveAllThePricesForACartErrorMessage
+	
+	^' Can not create a cashier for a cart for which it doesnt have all the prices'! !
+
+!PublisherCashier class methodsFor: 'error messages' stamp: 'EE 6/6/2022 18:55:21'!
+canNotDoTheCheckoutToAnEmptyCartErrorMessage
+	
+	^' Can not do a checkout to an empty cart'! !
+
+!PublisherCashier class methodsFor: 'error messages' stamp: 'EE 6/6/2022 20:15:18'!
+canNotMakeACheckoutMoreThanOnceErrorMessage
+
+	^'Can not make a checkout: already done'! !
+
+!PublisherCashier class methodsFor: 'error messages' stamp: 'EE 6/6/2022 20:55:23'!
+canNotMakeACheckoutWithAnExpiredCreditCardErrorMessages
+
+	^ 'Can not make a checkout: credit card expired'
+	
+	! !
