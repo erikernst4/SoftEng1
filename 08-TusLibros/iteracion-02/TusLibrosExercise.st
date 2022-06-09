@@ -5,10 +5,11 @@ TestCase subclass: #CreditCardTest
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'EE 6/8/2022 17:36:43'!
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'LT 6/9/2022 00:03:21'!
 test01ACreditCardExpirationDateIsTheDateGivenInTheCreation
 
 	| card |
+	
 	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current) numbered: 4444444444444444.
 	
 	self assert: (GregorianMonthOfYear current) equals: card expirationDate! !
@@ -36,27 +37,34 @@ test03CanNotCreateACreditCardWithAnInvalidNumber
 
 !classDefinition: #MerchantProcessorSimulator category: 'TusLibrosExercise'!
 TestCase subclass: #MerchantProcessorSimulator
-	instanceVariableNames: ''
+	instanceVariableNames: 'simulatedAction amountOfMoneyDebited creditCard'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'EE 6/8/2022 18:37:00'!
-test01MerchantProcessorDebitReturnsSuccessWhenDebitingWithValidCard
-
-	| merchantProcessor returnMessage |
+!MerchantProcessorSimulator methodsFor: 'debit' stamp: 'LT 6/9/2022 00:51:54'!
+debit: anAmountOfMoney from: aCreditCard
 	
-	merchantProcessor  := MerchantProcessorSimulator new.
-	
-	returnMessage := merchantProcessor debit: 44.44 from: 4444444444444444 withExpirationDate: (GregorianMonthOfYear current next) ownedBy: 'El Diego'.
-	
-	self assert: 'Success' equals: returnMessage.! !
+	^simulatedAction value: anAmountOfMoney value: aCreditCard.! !
 
 
-!MerchantProcessorSimulator methodsFor: 'debit' stamp: 'EE 6/8/2022 18:36:54'!
-debit: anAmountOfMoney from: aCreditCardNumber withExpirationDate: aGregorianMonthOfYear ownedBy: aName 
-	
-	^'Success'! !
+!MerchantProcessorSimulator methodsFor: 'initialization' stamp: 'LT 6/9/2022 00:51:13'!
+initialize
+
+	simulatedAction := [ :anAmountOfMoney :aCreditCard | 
+		amountOfMoneyDebited := anAmountOfMoney.
+		creditCard := aCreditCard.]! !
+
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'LT 6/9/2022 01:06:44'!
+denyCardWithNoFunds
+
+	simulatedAction := [ :anAmount :aCreditCard | self error: PublisherCashier canNotMakeACheckoutWithCardWithNoFundsErrorMessages ]! !
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'LT 6/9/2022 01:00:47'!
+denyStolenCard
+
+	simulatedAction := [ :anAmount :aCreditCard | self error: PublisherCashier canNotMakeACheckoutWithStolenCardErrorMessages ]! !
 
 
 !classDefinition: #PublisherTest category: 'TusLibrosExercise'!
@@ -65,6 +73,30 @@ TestCase subclass: #PublisherTest
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
+
+!PublisherTest methodsFor: 'instance creation' stamp: 'LT 6/9/2022 01:16:33'!
+cartWithOneBook
+
+	| cartWithOneBook catalogue |
+	
+	catalogue := self catalogueWithOneBook.
+
+	cartWithOneBook := PublisherCart for: catalogue.
+	cartWithOneBook addBookWithISBN: 12 quantity: 2.
+	
+	^ cartWithOneBook.! !
+
+!PublisherTest methodsFor: 'instance creation' stamp: 'LT 6/9/2022 01:25:37'!
+cartWithTwoBooks
+
+	| cartWithTwoBooks catalogue |
+	
+	catalogue := self catalogueWithTwoBooks.
+	
+	cartWithTwoBooks := PublisherCart for: catalogue.
+	cartWithTwoBooks addBookWithISBN: 12 quantity: 1; addBookWithISBN: 13 quantity: 1.
+	
+	^ cartWithTwoBooks.! !
 
 !PublisherTest methodsFor: 'instance creation' stamp: 'EE 6/8/2022 17:20:06'!
 catalogueWithOneBook
@@ -98,6 +130,16 @@ catalogueWithZeroBooks
 	^ books.
 	! !
 
+!PublisherTest methodsFor: 'instance creation' stamp: 'LT 6/9/2022 01:24:01'!
+emptyCart
+
+	| emptyCart catalogue |
+	
+	catalogue := self catalogueWithZeroBooks.
+	emptyCart := PublisherCart for: catalogue.
+		
+	^ emptyCart.! !
+
 
 !classDefinition: #PublisherCartTest category: 'TusLibrosExercise'!
 PublisherTest subclass: #PublisherCartTest
@@ -106,57 +148,47 @@ PublisherTest subclass: #PublisherCartTest
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:24:22'!
 test01CartIsEmptyWhenCreated
 
-	| cart catalogue |
+	| cart |
 	
-	catalogue := self catalogueWithZeroBooks.
-	cart := PublisherCart for: catalogue.
+	cart := self emptyCart.
 	
 	self assert: cart isEmpty.! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:16:04'!
 test02CartIsNotEmptyWhenAddedABook
 
-	| cart catalogue |
+	| cart |
 	
-	catalogue := self catalogueWithOneBook.
-	
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 1.
+	cart := self cartWithOneBook.
 	
 	self deny: cart isEmpty.! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:17:13'!
 test03CartHasOnlyTheBookAdded
 
-	| cart expectedBooks catalogue |
+	| cart expectedBooks |
 	
-	catalogue := self catalogueWithOneBook.
-	
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 1.
+	cart := self cartWithOneBook.
 	
 	expectedBooks := Set with:12.
 	
 	self assert: (expectedBooks) equals: (cart books).! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:25:58'!
 test04CartHasOnlyTheBooksAdded
 
-	| cart expectedBooks catalogue |
+	| cart expectedBooks |
 	
-	catalogue := self catalogueWithTwoBooks.
-	
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 1; addBookWithISBN: 13 quantity: 1.
+	cart := self cartWithTwoBooks .
 	
 	expectedBooks := Set with:12 with:13.
 	
 	self assert: expectedBooks equals: (cart books).! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:26:34'!
 test05CanNotAddABookThatIsNotInTheCatalogue
 
 	| cart catalogue |
@@ -171,7 +203,7 @@ test05CanNotAddABookThatIsNotInTheCatalogue
 		withExceptionDo: [ :anError |
 			self assert: PublisherCart canNotAddABookOutsideOfTheCatalogueErrorMessage equals: anError messageText.
 			self assert: cart isEmpty.
-			]! !
+		]! !
 
 !PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
 test06ABookAddedMoreThanOnceQuantityInACartIsTheSumOfTheAddedAmount
@@ -187,21 +219,8 @@ test06ABookAddedMoreThanOnceQuantityInACartIsTheSumOfTheAddedAmount
 	self assert: 5 equals: (cart quantityOf: 12).
 	! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test07ABookAddedOnceQuantityInACartIsTheAddedAmount
-
-	| cart catalogue |
-	
-	catalogue := self catalogueWithOneBook.
-	
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 1.
-	
-	self assert: 1 equals: (cart quantityOf: 12).
-	! !
-
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test08ACartCanNotAddNonPositiveQuantityOfABook
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:28:53'!
+test07ACartCanNotAddNonPositiveQuantityOfABook
 
 	| cart catalogue |
 	
@@ -217,8 +236,8 @@ test08ACartCanNotAddNonPositiveQuantityOfABook
 			self assert: cart isEmpty.
 			]! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test09CannotAskTheQuantityOfABookThatHasNotBeenAdd
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:29:41'!
+test08CannotAskTheQuantityOfABookThatHasNotBeenAdd
 
 	| cart catalogue |
 
@@ -232,50 +251,41 @@ test09CannotAskTheQuantityOfABookThatHasNotBeenAdd
 		withExceptionDo: [ :anError |
 			self assert: PublisherCart bookHasNotBeenAddToTheCartMessage equals: anError messageText.
 			self assert: cart isEmpty.
-			].
+		].
 	! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test10CartListOfAnEmptyCartShouldReturnEmptyString
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:31:18'!
+test09CartListOfAnEmptyCartShouldReturnEmptyString
 
-	| cart catalogue |
+	| cart |
 	
-	catalogue := self catalogueWithOneBook.
-	
-	cart := PublisherCart for: catalogue.
+	cart := self emptyCart.
 	
 	self assert: '' equals: cart asStringList.
 	! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test11CartListOfACartWithOneBookShouldReturnTheBookISBNAndItsQuantity
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:31:27'!
+test10CartListOfACartWithOneBookShouldReturnTheBookISBNAndItsQuantity
 
-	| cart catalogue |
+	| cart |
 
-	catalogue := self catalogueWithTwoBooks.
+	cart := self cartWithOneBook.
 	
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 1. 
-	
-	self assert: '|12|1' equals: cart asStringList.
+	self assert: '|12|2' equals: cart asStringList.
 	! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test12CartListOfACartWithMultipleBooksShouldReturnItsBooksISBNAndQuantity
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:31:36'!
+test11CartListOfACartWithMultipleBooksShouldReturnItsBooksISBNAndQuantity
 
-	| cart catalogue |
+	| cart |
 
-	catalogue := self catalogueWithTwoBooks.
+	cart := self cartWithTwoBooks.
 	
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 1. 
-	cart addBookWithISBN: 13 quantity: 2. 
-	
-	self assert: '|12|1|13|2' equals: cart asStringList
+	self assert: '|12|1|13|1' equals: cart asStringList
 	! !
 
-!PublisherCartTest methodsFor: 'tests' stamp: 'EE 6/6/2022 18:05:49'!
-test13ACartCanNotAddANonIntegerQuantity
+!PublisherCartTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:32:40'!
+test12ACartCanNotAddANonIntegerQuantity
 
 	| cart catalogue |
 	
@@ -291,7 +301,6 @@ test13ACartCanNotAddANonIntegerQuantity
 			self assert: cart isEmpty.
 			]! !
 
-
 
 !classDefinition: #PublisherCashierTest category: 'TusLibrosExercise'!
 PublisherTest subclass: #PublisherCashierTest
@@ -300,103 +309,153 @@ PublisherTest subclass: #PublisherCashierTest
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:33:37'!
 test01ACashierCantMakeTheCheckoutOfAnEmptyCart
 
-	| cashier cart card date |
+	| cashier cart card date salesBook merchantProcessor |
 	
-	cart := PublisherCart for: (OrderedCollection new).
+	salesBook  := OrderedCollection new.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	cart := self emptyCart.
+	
+	card := self validCard.
 	
 	date := GregorianMonthOfYear current.
 	
-	cashier := PublisherCashier for: cart withPrices: (Dictionary new) withCard: card on: date.
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: (Dictionary new) 
+		registerOn: salesBook 
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
 	
 	self 
 		should: [cashier checkout]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: PublisherCashier canNotDoTheCheckoutToAnEmptyCartErrorMessage equals: anError messageText.
-			self assert: 0 equals: cashier amountPaid.
-			].! !
+			self assert: PublisherCashier canNotDoTheCheckoutToAnEmptyCartErrorMessage 
+			equals: anError messageText.
+			
+			self deny: cashier cartHasBeenPaid.
+			self assert: salesBook isEmpty.
+		].! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:35:18'!
 test02ACashierAmountPaidAfterCheckoutIsThePriceOfTheBookMultipliedForItsQuantity
 
-	| cashier cart catalogue prices card date |
+	| cashier cart prices card date merchantProcessor |
 	
-	catalogue := Set with: 12.
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 2.
+	cart := self cartWithOneBook.
+	
 	prices := Dictionary new. 
 	prices at: 12 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	card := self validCard.
 	
 	date := GregorianMonthOfYear current.
 	
-	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices 
+		registerOn: OrderedCollection new
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
 	
 	cashier checkout.
+	
 	self assert: (4 * 2) equals: cashier amountPaid.! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:36:11'!
 test03ACashierAmountPaidAfterCheckoutIsSumOfThePriceOfTheBookMultipliedForItsQuantity
 
-	| cashier cart catalogue prices card date |
+	| cashier cart catalogue prices card date merchantProcessor |
 	
 	catalogue := Set with: 12 with: 13.
+	
 	cart := PublisherCart for: catalogue.
 	cart addBookWithISBN: 12 quantity: 2; addBookWithISBN: 13 quantity: 1.
 	
 	prices := Dictionary new.
 	prices at: 12 put: 4 ; at: 13 put: 44.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	card := self validCard.
 	
 	date := GregorianMonthOfYear current.
 	
-	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices 
+		registerOn: OrderedCollection new
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
 	
 	cashier checkout.
+	
 	self assert: (4 * 2 + (1 * 44)) equals: cashier amountPaid.! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:38:02'!
 test04ACashierMustKnowThePriceForEveryCartBook
 
-	| cart catalogue prices card date |
+	| cart prices card date merchantProcessor |
 	
-	catalogue := Set with: 12.
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 2.
+	cart := self cartWithOneBook.
+	
 	prices := Dictionary new. 
 	prices at: 13 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	card := self validCard.
+	
 	date := GregorianMonthOfYear current.
 	
+	merchantProcessor := MerchantProcessorSimulator new.
+	
 	self 
-		should: [PublisherCashier for: cart withPrices: prices withCard: card on: date.]
-		raise: Error - MessageNotUnderstood
+		should: [ PublisherCashier 
+			for: cart 
+			withPrices: prices 
+			registerOn: (OrderedCollection new) 
+			withCard: card 
+			on: date 
+			withMerchantProcessor: 	merchantProcessor.
+		] raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: PublisherCashier canNotCreateACashierThatDoesntHaveAllThePricesForACartErrorMessage equals: anError messageText.
-			].! !
+			self 
+			assert: PublisherCashier canNotCreateACashierThatDoesntHaveAllThePricesForACartErrorMessage 
+			equals: anError messageText.
+		].! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:38:12'!
 test05ACashierCanNotDoACheckoutMoreThanOnce
 
-	| cart catalogue prices cashier card date |
+	| cart prices cashier card date merchantProcessor |
 	
-	catalogue := Set with: 12.
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 2.
+	cart := self cartWithOneBook.
+	
 	prices := Dictionary new. 
 	prices at: 12 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444.
+	card := self validCard.
+	
 	date := GregorianMonthOfYear current.
-	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices 
+		registerOn: OrderedCollection new
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
 	
 	cashier checkout.
 	
@@ -406,36 +465,190 @@ test05ACashierCanNotDoACheckoutMoreThanOnce
 		withExceptionDo: [ :anError |
 			self assert: PublisherCashier canNotMakeACheckoutMoreThanOnceErrorMessage equals: anError messageText.
 			self assert: (4 * 2) equals: cashier amountPaid.
-			].! !
+		].! !
 
-!PublisherCashierTest methodsFor: 'tests' stamp: 'EE 6/8/2022 17:36:43'!
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:38:33'!
 test06ACashierCanNotDoTheCheckoutWithAnExpiredCard
 
-	| cashier cart catalogue prices card date |
+	| cashier cart prices card date merchantProcessor |
 	
-	catalogue := Set with: 12.
-	cart := PublisherCart for: catalogue.
-	cart addBookWithISBN: 12 quantity: 2.
+	cart := self cartWithOneBook.
+	
 	prices := Dictionary new. 
 	prices at: 12 put: 4.
 	
-	card := CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current previous) numbered: 4444444444444444.
+	card := self invalidCard.
+	
 	date := GregorianMonthOfYear current.
 	
-	cashier := PublisherCashier for: cart withPrices: prices withCard: card on: date.
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices 
+		registerOn: OrderedCollection new
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
 	
 	self 
 		should: [cashier checkout.]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: PublisherCashier canNotMakeACheckoutWithAnExpiredCreditCardErrorMessages equals: anError messageText.
-			self assert: 0 equals: cashier amountPaid.
-			].! !
+			self 
+			assert: PublisherCashier canNotMakeACheckoutWithAnExpiredCreditCardErrorMessages 
+			equals: anError messageText.
+			self deny: cashier cartHasBeenPaid.
+		].! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:38:42'!
+test07WhenACashierDoesACheckoutItSaveTheSaleInSalesBook
+
+	| cashier cart prices card date salesBook merchantProcessor |
+	
+	salesBook := OrderedCollection new.
+	
+	cart := self cartWithOneBook.
+	
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	card := self validCard.
+	date := GregorianMonthOfYear current.
+	
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices
+		registerOn: salesBook 
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
+		
+	cashier checkout.
+	
+	self assert: salesBook includes: cashier amountPaid.! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 00:41:27'!
+test08ACashierCollaboratesWithMerchantProcessorAndItAllowsTheCheckout
+
+	| cashier cart prices card date salesBook merchantProcessor |
+	
+	salesBook := OrderedCollection new.
+	
+	cart := self cartWithOneBook.
+	
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	card := self validCard.
+	date := GregorianMonthOfYear current.
+	
+	merchantProcessor := MerchantProcessorSimulator new.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices
+		registerOn: salesBook 
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
+		
+	cashier checkout.
+	
+	self assert: salesBook includes: cashier amountPaid.
+			! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:38:54'!
+test09ACashierCollaboratesWithMerchantProcessorAndItDoesntAllowsTransactionOnStolenCard
+
+	| cashier cart prices card date salesBook merchantProcessor |
+	
+	salesBook := OrderedCollection new.
+	
+	cart := self cartWithOneBook.
+	
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	card := self validCard.
+	date := GregorianMonthOfYear current.
+	
+	merchantProcessor := MerchantProcessorSimulator new.
+	merchantProcessor denyStolenCard.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices
+		registerOn: salesBook 
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
+		
+	self 
+		should: [cashier checkout.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self 
+			assert: PublisherCashier canNotMakeACheckoutWithStolenCardErrorMessages 
+			equals: anError messageText.
+			self deny: cashier cartHasBeenPaid.
+		].
+			! !
+
+!PublisherCashierTest methodsFor: 'tests' stamp: 'LT 6/9/2022 01:39:00'!
+test10ACashierCollaboratesWithMerchantProcessorAndItDoesntAllowsTransactionOnCardWithNoFunds
+
+	| cashier cart prices card date salesBook merchantProcessor |
+	
+	salesBook := OrderedCollection new.
+	
+	cart := self cartWithOneBook.
+	
+	prices := Dictionary new. 
+	prices at: 12 put: 4.
+	
+	card := self validCard.
+	date := GregorianMonthOfYear current.
+	
+	merchantProcessor := MerchantProcessorSimulator new.
+	merchantProcessor denyCardWithNoFunds.
+	
+	cashier := PublisherCashier 
+		for: cart 
+		withPrices: prices
+		registerOn: salesBook 
+		withCard: card 
+		on: date
+		withMerchantProcessor: 	merchantProcessor.
+		
+	self 
+		should: [cashier checkout.]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self 
+			assert: PublisherCashier canNotMakeACheckoutWithCardWithNoFundsErrorMessages 
+			equals: anError messageText.
+			self deny: cashier cartHasBeenPaid.
+		].
+			! !
+
+
+!PublisherCashierTest methodsFor: 'instance creation' stamp: 'LT 6/9/2022 00:09:40'!
+invalidCard
+
+	^ CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current previous) numbered: 4444444444444444! !
+
+!PublisherCashierTest methodsFor: 'instance creation' stamp: 'LT 6/9/2022 00:08:52'!
+validCard
+
+	^ CreditCard for: 'Hernán Wilkinson' validUntil: (GregorianMonthOfYear current next) numbered: 4444444444444444! !
 
 
 !classDefinition: #CreditCard category: 'TusLibrosExercise'!
 Object subclass: #CreditCard
-	instanceVariableNames: 'ownerName expirationDate gregorianMonthOfYear number'
+	instanceVariableNames: 'ownerName expirationDate number'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
@@ -567,10 +780,8 @@ assertIsValidQuantity: aQuantity
 	(aQuantity isInteger) ifFalse: [ self class canNotAddANonIntegerQuantityOfABook].! !
 
 
-!PublisherCart methodsFor: 'adding' stamp: 'EE 6/6/2022 17:46:03'!
+!PublisherCart methodsFor: 'adding' stamp: 'LT 6/9/2022 01:09:11'!
 addBookWithISBN: anISBN quantity: aQuantity
-
-	
 	
 	self assertCanAddBook: anISBN quantity: aQuantity.
 	
@@ -675,20 +886,23 @@ canNotAddNonPositiveQuantityOfABookErrorMessage
 
 !classDefinition: #PublisherCashier category: 'TusLibrosExercise'!
 Object subclass: #PublisherCashier
-	instanceVariableNames: 'publisherCart amountPaid alreadyPaid pricesCatalogue card date'
+	instanceVariableNames: 'publisherCart amountPaid alreadyPaid pricesCatalogue card date salesBook merchantProcessor'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!PublisherCashier methodsFor: 'initialization' stamp: 'EE 6/8/2022 17:15:57'!
-initializeFor: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate 
+!PublisherCashier methodsFor: 'initialization' stamp: 'LT 6/9/2022 00:34:26'!
+initializeFor: aPublisherCart withPrices: aCataloguePrices registerOn: aSalesBook withCard: aCard on: aDate withMerchantProcessor: aMerchantProcessor
 	
 	publisherCart := aPublisherCart.
 	pricesCatalogue := aCataloguePrices.
+	salesBook := aSalesBook.
 	card := aCard.
+	date := aDate.
+	merchantProcessor := aMerchantProcessor.
+	
 	alreadyPaid := false.
-	amountPaid := 0.
-	date := aDate.! !
+	amountPaid := 0.! !
 
 
 !PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 21:16:27'!
@@ -696,12 +910,14 @@ assertAlreadyPaid
 
 	(alreadyPaid) ifTrue: [self class canNotMakeACheckoutMoreThanOnce]! !
 
-!PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 20:22:01'!
+!PublisherCashier methodsFor: 'assertions' stamp: 'LT 6/9/2022 00:06:00'!
 assertCanMakeTheCheckout
 
 	self assertCartIsNotEmpty.
 	
-	self assertAlreadyPaid! !
+	self assertAlreadyPaid.
+	
+	self assertCardIsValid.! !
 
 !PublisherCashier methodsFor: 'assertions' stamp: 'EE 6/6/2022 21:43:43'!
 assertCardIsValid
@@ -714,14 +930,16 @@ assertCartIsNotEmpty
 	(publisherCart isEmpty) ifTrue: [self class canNotDoTheCheckoutToAnEmptyCart]! !
 
 
-!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/8/2022 17:13:45'!
+!PublisherCashier methodsFor: 'checkout' stamp: 'LT 6/9/2022 00:57:06'!
 checkout	
 
 	self assertCanMakeTheCheckout.
 	
-	self assertCardIsValid.
-	
 	amountPaid := publisherCart sum: [ :book | (self priceOfBook: book) * (publisherCart quantityOf: book) ].
+	
+	merchantProcessor debit: amountPaid from: card.
+	
+	salesBook add: amountPaid.
 	
 	alreadyPaid := true.! !
 
@@ -736,18 +954,23 @@ amountPaid
 	
 	^ amountPaid! !
 
+!PublisherCashier methodsFor: 'accessing' stamp: 'LT 6/9/2022 01:03:55'!
+cartHasBeenPaid
+	
+	^ alreadyPaid! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'PublisherCashier class' category: 'TusLibrosExercise'!
 PublisherCashier class
 	instanceVariableNames: ''!
 
-!PublisherCashier class methodsFor: 'instance creation' stamp: 'EE 6/6/2022 21:43:59'!
-for: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate
+!PublisherCashier class methodsFor: 'instance creation' stamp: 'LT 6/9/2022 00:35:14'!
+for: aPublisherCart withPrices: aCataloguePrices registerOn: aSalesBook withCard: aCard on: aDate withMerchantProcessor: aMerchantProcessor
 	
 	self assertThereIsAPriceIn: aCataloguePrices forAllCartBooks: (aPublisherCart books). 
 	
-	^self new initializeFor: aPublisherCart withPrices: aCataloguePrices withCard: aCard on: aDate! !
+	^self new initializeFor: aPublisherCart withPrices: aCataloguePrices registerOn: aSalesBook withCard: aCard on: aDate withMerchantProcessor: aMerchantProcessor! !
 
 
 !PublisherCashier class methodsFor: 'errors' stamp: 'EE 6/6/2022 19:41:42'!
@@ -769,6 +992,16 @@ canNotMakeACheckoutMoreThanOnce
 canNotMakeACheckoutWithAnExpiredCreditCard
 	
 	self error: self canNotMakeACheckoutWithAnExpiredCreditCardErrorMessages ! !
+
+!PublisherCashier class methodsFor: 'errors' stamp: 'LT 6/9/2022 01:07:42'!
+canNotMakeACheckoutWithCardWithNoFundsErrorMessages
+
+	^ 'No se puede debitar una tarjeta sin fondos'.! !
+
+!PublisherCashier class methodsFor: 'errors' stamp: 'LT 6/9/2022 01:07:48'!
+canNotMakeACheckoutWithStolenCardErrorMessages
+
+	^ 'No se puede debitar una tarjeta robada'.! !
 
 
 !PublisherCashier class methodsFor: 'assertions' stamp: 'EE 6/6/2022 19:50:39'!
