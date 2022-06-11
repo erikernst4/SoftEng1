@@ -118,7 +118,7 @@ test05InterfaceCannotListACartWithInvalidCartId
 			self assert: anError messageText = Interface invalidCartIdErrorMessage.
 		]! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 14:04:41'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 18:00:01'!
 test06InterfacesMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegistersAllTheBooksPurchased
 
 		| authenticator cartId interface expectedContent card catalogue |
@@ -137,7 +137,27 @@ test06InterfacesMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegiste
 	
 	interface checkoutCart: cartId withCreditCard: card.
 		
-	self assert: expectedContent equals: (interface listPurchases: cartId withPassword: '123').! !
+	self assert: expectedContent equals: (interface listPurchasesOf: 'Username' withPassword: '123').! !
+
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 17:58:45'!
+test07InterfacesCanNotListPurchasesOfAValidCartIdWithAnInvalidPassword
+
+		| authenticator cartId interface catalogue |
+		
+	catalogue := Dictionary new. 
+	catalogue at: 12 put: 4.	
+	authenticator := AuthenticatorSimulator new.
+	interface := Interface withAuthenticator: authenticator withCatalogue: catalogue withMerchantProcessor: (MerchantProcessorSimulator new) .
+	cartId := interface createCartFor: 'Username' withPassword: '123' .
+	
+	authenticator invalidAuthentication.
+		
+	self 
+		should: [interface listPurchasesOf: cartId withPassword: '000']
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = Interface invalidAuthenticationErrorMessage.
+		]! !
 
 
 !classDefinition: #MerchantProcessorSimulator category: 'TusLibrosExercise'!
@@ -867,22 +887,23 @@ assertNumberIsValid: anObject
 
 !classDefinition: #Interface category: 'TusLibrosExercise'!
 Object subclass: #Interface
-	instanceVariableNames: 'authenticatorSimulator authenticator carts catalogue salesBook merchantProcessor'
+	instanceVariableNames: 'authenticatorSimulator authenticator carts catalogue salesBook merchantProcessor cartUsers'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!Interface methodsFor: 'initialization' stamp: 'EE 6/11/2022 14:04:21'!
+!Interface methodsFor: 'initialization' stamp: 'EE 6/11/2022 18:07:01'!
 initializeWithAuthenticator: anAuthenticator withCatalogue: aCatalogue withMerchantProcessor: aMerchantProcessor      
 	
 	authenticator := anAuthenticator.
 	carts := Dictionary new.
 	catalogue := aCatalogue.
 	merchantProcessor := aMerchantProcessor.
-	salesBook := Dictionary new.! !
+	salesBook := Dictionary new.
+	cartUsers := Dictionary new.! !
 
 
-!Interface methodsFor: 'cart creation' stamp: 'LT 6/9/2022 20:57:22'!
+!Interface methodsFor: 'cart creation' stamp: 'EE 6/11/2022 18:07:37'!
 createCartFor: aUserId withPassword: aPassword 
 
 	| cart cartId |
@@ -893,6 +914,8 @@ createCartFor: aUserId withPassword: aPassword
 	cart := PublisherCart for: catalogue.
 	
 	carts at: cartId put: cart.
+	
+	cartUsers at: cartId put: aUserId.
 	
 	^ cartId.
 	
@@ -928,20 +951,39 @@ getCart: aCartId
 	^ carts at: aCartId ifAbsent: [ self error: self class invalidCartIdErrorMessage]! !
 
 
-!Interface methodsFor: 'cart checkout - private' stamp: 'EE 6/11/2022 14:02:59'!
-getPurchasesOfCart: aCartId
+!Interface methodsFor: 'cart checkout - private' stamp: 'EE 6/11/2022 18:04:56'!
+createEntryInSalesBookFor: aClientId
 
-	^ salesBook at: aCartId ifAbsent: [OrderedCollection new]! !
+	salesBook at: aClientId put: (OrderedCollection new).
+	^ salesBook at: aClientId! !
+
+!Interface methodsFor: 'cart checkout - private' stamp: 'EE 6/11/2022 18:06:17'!
+getClientWithCart: aCartId 
+	
+	^ cartUsers at: aCartId
+	! !
+
+!Interface methodsFor: 'cart checkout - private' stamp: 'EE 6/11/2022 18:10:39'!
+getPurchasesOfClient: aClientid
+
+	^ salesBook at: aClientid ifAbsent: [self createEntryInSalesBookFor: aClientid]! !
+
+!Interface methodsFor: 'cart checkout - private' stamp: 'EE 6/11/2022 18:10:28'!
+getPurchasesOfClientWithCart: aCartId
+
+	| clientid |
+	clientid := self getClientWithCart: aCartId.
+	^ self getPurchasesOfClient: clientid! !
 
 
-!Interface methodsFor: 'cart checkout' stamp: 'EE 6/11/2022 14:07:25'!
+!Interface methodsFor: 'cart checkout' stamp: 'EE 6/11/2022 18:03:22'!
 checkoutCart: aCartId withCreditCard: aCreditCard
 
 	| cashier |
 	cashier := PublisherCashier 
 		for: (self getCart: aCartId)
 		withPrices: catalogue
-		registerOn: (self getPurchasesOfCart: aCartId)
+		registerOn: (self getPurchasesOfClientWithCart: aCartId)
 		withCard: aCreditCard 
 		on: (GregorianMonthOfYear current)
 		withMerchantProcessor: 	merchantProcessor.
@@ -949,12 +991,15 @@ checkoutCart: aCartId withCreditCard: aCreditCard
 	cashier checkout.! !
 
 
-!Interface methodsFor: 'list purchases' stamp: 'EE 6/11/2022 14:06:04'!
-listPurchases: aCartId withPassword: aPassword 
+!Interface methodsFor: 'list purchases' stamp: 'EE 6/11/2022 18:11:35'!
+listPurchasesOf: aClientId withPassword: aPassword 
 	
 	| purchasesList |
+	
+	authenticator login: aClientId with: aPassword.
+	
 	purchasesList := Bag new.
-	(self getPurchasesOfCart: aCartId) do: [:aSale | purchasesList addAll: (aSale list)].
+	(self getPurchasesOfClient: aClientId) do: [:aSale | purchasesList addAll: (aSale list)].
 	
 	^purchasesList
 	! !
@@ -1211,14 +1256,12 @@ priceOfBook: aBook
 	
 	^ pricesCatalogue at: aBook! !
 
-!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/11/2022 13:08:23'!
+!PublisherCashier methodsFor: 'checkout' stamp: 'EE 6/11/2022 17:38:27'!
 registerSale
 	
 	| sale |
 	sale := Sale of: (publisherCart bagOfBooks) withCatalogue: pricesCatalogue.
-	salesBook add: sale.
-	
-	^sale! !
+	salesBook add: sale.! !
 
 
 !PublisherCashier methodsFor: 'accessing' stamp: 'EE 6/6/2022 19:22:12'!
@@ -1324,6 +1367,10 @@ initializeOf: aBagOfBooks withCatalogue: aCatalogue
 	bagOfBooks := aBagOfBooks.
 	catalogue := aCatalogue.! !
 
+
+!Sale methodsFor: 'accessint' stamp: 'EE 6/11/2022 17:47:21'!
+list
+	^bagOfBooks! !
 
 !Sale methodsFor: 'accessint' stamp: 'EE 6/11/2022 13:20:02'!
 total
