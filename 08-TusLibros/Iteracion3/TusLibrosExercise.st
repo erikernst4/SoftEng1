@@ -118,8 +118,8 @@ test05InterfaceCannotListACartWithInvalidCartId
 			self assert: anError messageText = Interface invalidCartIdErrorMessage.
 		]! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 18:00:01'!
-test06InterfacesMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegistersAllTheBooksPurchased
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 23:35:17'!
+test06InterfaceMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegistersAllTheBooksPurchased
 
 		| authenticator cartId interface expectedContent card catalogue |
 		
@@ -139,8 +139,8 @@ test06InterfacesMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegiste
 		
 	self assert: expectedContent equals: (interface listPurchasesOf: 'Username' withPassword: '123').! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 17:58:45'!
-test07InterfacesCanNotListPurchasesOfAValidCartIdWithAnInvalidPassword
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 23:34:56'!
+test07InterfaceCanNotListPurchasesOfAValidCartIdWithAnInvalidPassword
 
 		| authenticator cartId interface catalogue |
 		
@@ -157,6 +157,32 @@ test07InterfacesCanNotListPurchasesOfAValidCartIdWithAnInvalidPassword
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = Interface invalidAuthenticationErrorMessage.
+		]! !
+
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'EE 6/11/2022 23:41:22'!
+test08InterfaceCanNotUseACartIdAfterMakingCheckOut
+
+		| authenticator cartId interface expectedContent card catalogue |
+		
+	catalogue := Dictionary new. 
+	catalogue at: 12 put: 4.	
+	authenticator := AuthenticatorSimulator new.	
+	interface := Interface withAuthenticator: authenticator withCatalogue: catalogue withMerchantProcessor: (MerchantProcessorSimulator new) .
+	cartId := interface createCartFor: 'Username' withPassword: '123' .
+	
+	interface addToCart: cartId aBook: 12 quantity: 1.
+	expectedContent := Bag new.
+	expectedContent add: 12 withOccurrences: 1.
+	
+	card := PublisherTest new validCard.
+	
+	interface checkoutCart: cartId withCreditCard: card.
+		
+	self 
+		should: [interface addToCart: cartId aBook: 12 quantity: 1]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = Interface invalidCartIdErrorMessage.
 		]! !
 
 
@@ -975,8 +1001,16 @@ getPurchasesOfClientWithCart: aCartId
 	clientid := self getClientWithCart: aCartId.
 	^ self getPurchasesOfClient: clientid! !
 
+!Interface methodsFor: 'cart checkout - private' stamp: 'EE 6/11/2022 23:43:57'!
+removeCart: aCartId
 
-!Interface methodsFor: 'cart checkout' stamp: 'EE 6/11/2022 18:03:22'!
+	carts removeKey: aCartId.
+	
+	cartUsers removeKey: aCartId.
+! !
+
+
+!Interface methodsFor: 'cart checkout' stamp: 'EE 6/11/2022 23:41:52'!
 checkoutCart: aCartId withCreditCard: aCreditCard
 
 	| cashier |
@@ -988,7 +1022,9 @@ checkoutCart: aCartId withCreditCard: aCreditCard
 		on: (GregorianMonthOfYear current)
 		withMerchantProcessor: 	merchantProcessor.
 		
-	cashier checkout.! !
+	cashier checkout.
+	
+	self removeCart: aCartId.! !
 
 
 !Interface methodsFor: 'list purchases' stamp: 'EE 6/11/2022 18:11:35'!
