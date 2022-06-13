@@ -50,7 +50,7 @@ TestCase subclass: #InterfaceTest
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:42:30'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:09:58'!
 test01InterfaceCreateCartWithValidAuthenticationCreatesAnEmptyCart
 
 	| authenticator cartId interface |
@@ -59,13 +59,13 @@ test01InterfaceCreateCartWithValidAuthenticationCreatesAnEmptyCart
 	interface := Interface 
 		withAuthenticator: authenticator 
 		withCatalogue: OrderedCollection new 
-		withMerchantProcessor: (MerchantProcessorSimulator new) .
+		withMerchantProcessor: (MerchantProcessorSimulator new).
 		
 	cartId := interface createCartFor: 'Username' withPassword: '123' .
 	
 	self assert: (interface listCart: cartId) isEmpty.! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:42:59'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:09'!
 test02InterfaceCreateCartWithInvalidAuthenticationDoesNotCreateACart
 
 	| authenticator interface |
@@ -75,7 +75,7 @@ test02InterfaceCreateCartWithInvalidAuthenticationDoesNotCreateACart
 	interface := Interface 
 		withAuthenticator: authenticator 
 		withCatalogue: OrderedCollection new 
-		withMerchantProcessor: (MerchantProcessorSimulator new) .
+		withMerchantProcessor: (MerchantProcessorSimulator new).
 	
 	self  should: [interface createCartFor: 'Username' withPassword: '123']
 		raise: Error - MessageNotUnderstood 
@@ -83,7 +83,7 @@ test02InterfaceCreateCartWithInvalidAuthenticationDoesNotCreateACart
 			self assert: anError messageText = Interface invalidAuthenticationErrorMessage.
 		]! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:50:55'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:20'!
 test03InterfaceCanAddBooksWithValidIdCart
 
 	| authenticator interface cartId expectedContent |
@@ -103,7 +103,7 @@ test03InterfaceCanAddBooksWithValidIdCart
 	self assert: expectedContent equals: (interface listCart: cartId).
 		! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:52:09'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:30'!
 test04InterfaceCannotAddWithInvalidCartId
 
 	| authenticator interface |
@@ -120,7 +120,7 @@ test04InterfaceCannotAddWithInvalidCartId
 			self assert: anError messageText = Interface invalidCartIdErrorMessage.
 		]! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:52:54'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:37'!
 test05InterfaceCannotListACartWithInvalidCartId
 
 	| authenticator interface |
@@ -137,7 +137,7 @@ test05InterfaceCannotListACartWithInvalidCartId
 			self assert: anError messageText = Interface invalidCartIdErrorMessage.
 		]! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:55:30'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:44'!
 test06InterfaceMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegistersAllTheBooksPurchased
 
 	| authenticator cartId interface expectedContent card catalogue |
@@ -160,7 +160,7 @@ test06InterfaceMakeCheckOutNonEmptyCartWithValidCartIdAndValidCreditCardRegister
 		
 	self assert: expectedContent equals: (interface listPurchasesOf: 'Username' withPassword: '123').! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:57:37'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:49'!
 test07InterfaceCanNotListPurchasesOfAValidCartIdWithAnInvalidPassword
 
 	| authenticator cartId interface catalogue |
@@ -181,7 +181,7 @@ test07InterfaceCanNotListPurchasesOfAValidCartIdWithAnInvalidPassword
 			self assert: anError messageText = Interface invalidAuthenticationErrorMessage.
 		]! !
 
-!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 16:59:19'!
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:10:55'!
 test08InterfaceCanNotUseACartIdAfterMakingCheckOut
 
 	| authenticator cartId interface expectedContent card catalogue |
@@ -206,6 +206,28 @@ test08InterfaceCanNotUseACartIdAfterMakingCheckOut
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = Interface invalidCartIdErrorMessage.
+		]! !
+
+!InterfaceTest methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 21:33:16'!
+test09InterfaceCanNotAddItemToExpiredCart
+
+	| authenticator cartId interface catalogue |
+			
+	catalogue := InstanceCreator new catalogueWithOneBook.	
+	authenticator := AuthenticatorSimulator new.	
+	interface := Interface 
+		withAuthenticator: authenticator 
+		withCatalogue: catalogue 
+		withMerchantProcessor: MerchantProcessorSimulator new.
+	
+	cartId := interface createCartFor: 'Username' withPassword: '123' .
+	
+	((interface getCart: cartId) getClock) advanceTimeBy: 30.
+		
+	self  should: [interface addToCart: cartId aBook: 12 quantity: 1.	]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = Interface cartExpiredErrorMessage.
 		]! !
 
 
@@ -685,6 +707,30 @@ login: aUserId with: aPassword
 	simulatedAction value: aUserId value: aPassword.! !
 
 
+!classDefinition: #Clock category: 'TusLibrosExercise'!
+Object subclass: #Clock
+	instanceVariableNames: 'addedTime creationTime'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosExercise'!
+
+!Clock methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 20:47:14'!
+advanceTimeBy: aNumberOfMinutes
+
+	addedTime := (0 - aNumberOfMinutes) * minute.! !
+
+!Clock methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 20:41:13'!
+creationTime
+
+	^ creationTime next: addedTime.! !
+
+!Clock methodsFor: 'as yet unclassified' stamp: 'LT 6/12/2022 20:40:05'!
+initialize
+
+	addedTime := (0 * minute).
+	creationTime := GregorianDateTime now.! !
+
+
 !classDefinition: #CreditCard category: 'TusLibrosExercise'!
 Object subclass: #CreditCard
 	instanceVariableNames: 'expirationDate'
@@ -863,13 +909,13 @@ validCard
 
 !classDefinition: #Interface category: 'TusLibrosExercise'!
 Object subclass: #Interface
-	instanceVariableNames: 'authenticatorSimulator authenticator carts catalogue salesBook merchantProcessor cartUsers'
+	instanceVariableNames: 'authenticatorSimulator authenticator carts catalogue salesBook merchantProcessor cartUsers clock'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
 
-!Interface methodsFor: 'initialization' stamp: 'EE 6/11/2022 18:07:01'!
-initializeWithAuthenticator: anAuthenticator withCatalogue: aCatalogue withMerchantProcessor: aMerchantProcessor      
+!Interface methodsFor: 'initialization' stamp: 'LT 6/12/2022 21:09:40'!
+initializeWithAuthenticator: anAuthenticator withCatalogue: aCatalogue withMerchantProcessor: aMerchantProcessor
 	
 	authenticator := anAuthenticator.
 	carts := Dictionary new.
@@ -879,14 +925,14 @@ initializeWithAuthenticator: anAuthenticator withCatalogue: aCatalogue withMerch
 	cartUsers := Dictionary new.! !
 
 
-!Interface methodsFor: 'cart creation' stamp: 'LT 6/12/2022 17:09:43'!
-createCartFor: aUsername withPassword: aPassword 
+!Interface methodsFor: 'cart creation' stamp: 'LT 6/12/2022 21:12:24'!
+createCartFor: aUsername withPassword: aPassword
 
 	| cart cartId |
 	
 	authenticator login: aUsername with: aPassword.
 	cartId := ((ParkMiller88Random next) * 1000000) asInteger.
-	cart := PublisherCart for: catalogue.
+	cart := PublisherCart for: catalogue withClock: (Clock new).
 	carts at: cartId put: cart.
 	cartUsers at: cartId put: aUsername.
 	
@@ -904,12 +950,15 @@ listCart: aCartId
 	^ cart bagOfBooks.! !
 
 
-!Interface methodsFor: 'adding to cart' stamp: 'EE 6/11/2022 12:33:41'!
+!Interface methodsFor: 'adding to cart' stamp: 'LT 6/12/2022 21:39:13'!
 addToCart: aCartId aBook: anISBN quantity: aQuantity
 
 	| cart |
 	
 	cart := self getCart: aCartId.
+	
+	self assertCartHasExpired: cart.
+	
 	cart addBookWithISBN: anISBN quantity: aQuantity.
 
 	
@@ -973,6 +1022,22 @@ checkoutCart: aCartId withCreditCard: aCreditCard
 	self removeCart: aCartId.! !
 
 
+!Interface methodsFor: 'assertions' stamp: 'LT 6/12/2022 21:38:54'!
+assertCartHasExpired: aCart
+
+	| cartClock |
+	
+	cartClock := aCart getClock.
+	
+	( ((cartClock creationTime ) distanceTo: GregorianDateTime now) > (29*minute) ) ifTrue: [
+		self error: self class cartExpiredErrorMessage.
+	].
+
+	
+	
+	! !
+
+
 !Interface methodsFor: 'list purchases' stamp: 'LT 6/12/2022 17:11:08'!
 listPurchasesOf: aUsername withPassword: aPassword 
 	
@@ -992,6 +1057,11 @@ listPurchasesOf: aUsername withPassword: aPassword
 Interface class
 	instanceVariableNames: ''!
 
+!Interface class methodsFor: 'instance creation' stamp: 'LT 6/12/2022 21:37:39'!
+cartExpiredErrorMessage
+
+	^ 'El carrito ha expirado'! !
+
 !Interface class methodsFor: 'instance creation' stamp: 'LT 6/9/2022 20:25:19'!
 invalidAuthenticationErrorMessage
 
@@ -1002,15 +1072,18 @@ invalidCartIdErrorMessage
 
 	^ 'El CartId ingresado no está registrado'! !
 
-!Interface class methodsFor: 'instance creation' stamp: 'EE 6/11/2022 14:04:41'!
-withAuthenticator: anAuthenticatorSimulator withCatalogue: aCatalogue withMerchantProcessor: aMerchantProcessor     
+!Interface class methodsFor: 'instance creation' stamp: 'LT 6/12/2022 21:09:18'!
+withAuthenticator: anAuthenticatorSimulator withCatalogue: aCatalogue withMerchantProcessor: aMerchantProcessor
 	
-	^self new initializeWithAuthenticator: anAuthenticatorSimulator withCatalogue: aCatalogue withMerchantProcessor: aMerchantProcessor ! !
+	^self new 
+		initializeWithAuthenticator: anAuthenticatorSimulator 
+		withCatalogue: aCatalogue 
+		withMerchantProcessor: aMerchantProcessor.! !
 
 
 !classDefinition: #PublisherCart category: 'TusLibrosExercise'!
 Object subclass: #PublisherCart
-	instanceVariableNames: 'books catalogue'
+	instanceVariableNames: 'books catalogue clock'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosExercise'!
@@ -1054,12 +1127,14 @@ assertIsValidQuantity: aQuantity
 	(aQuantity isInteger) ifFalse: [ self class canNotAddANonIntegerQuantityOfABook].! !
 
 
-!PublisherCart methodsFor: 'adding' stamp: 'LT 6/9/2022 01:09:11'!
+!PublisherCart methodsFor: 'adding' stamp: 'LT 6/12/2022 21:41:30'!
 addBookWithISBN: anISBN quantity: aQuantity
 	
 	self assertCanAddBook: anISBN quantity: aQuantity.
 	
-	books add: anISBN withOccurrences: aQuantity.! !
+	books add: anISBN withOccurrences: aQuantity.
+	
+	clock := Clock new.! !
 
 
 !PublisherCart methodsFor: 'initialization' stamp: 'EE 6/6/2022 17:45:33'!
@@ -1067,6 +1142,13 @@ initializeFor: aCatalogue
 
 	books := Bag new.
 	catalogue := aCatalogue.! !
+
+!PublisherCart methodsFor: 'initialization' stamp: 'LT 6/12/2022 21:03:10'!
+initializeFor: aCatalogue withClock: aClock
+
+	books := Bag new.
+	catalogue := aCatalogue.
+	clock := aClock.! !
 
 
 !PublisherCart methodsFor: 'accessing' stamp: 'LT 6/9/2022 21:05:43'!
@@ -1078,6 +1160,11 @@ bagOfBooks
 books
 	
 	^ books asSet.! !
+
+!PublisherCart methodsFor: 'accessing' stamp: 'LT 6/12/2022 21:33:16'!
+getClock
+
+	^ clock.! !
 
 !PublisherCart methodsFor: 'accessing' stamp: 'EE 6/6/2022 17:50:24'!
 quantityOf: anISBN
@@ -1103,6 +1190,11 @@ PublisherCart class
 for: aCatalogue
 
 	^ self new initializeFor: aCatalogue ! !
+
+!PublisherCart class methodsFor: 'instance creation' stamp: 'LT 6/12/2022 21:02:17'!
+for: aCatalogue withClock: aClock
+
+	^ self new initializeFor: aCatalogue withClock: aClock.! !
 
 
 !PublisherCart class methodsFor: 'error' stamp: 'LT 6/5/2022 15:02:02'!
