@@ -195,45 +195,6 @@ open
 	^self new initializeWith: 'TusLibros Client Test Window'.! !
 
 
-!classDefinition: #RealTimeClock category: 'TusLibrosREST'!
-Clock subclass: #RealTimeClock
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibrosREST'!
-
-!RealTimeClock methodsFor: 'time' stamp: 'HAW 5/5/2020 17:07:39'!
-now
-
-	^DateAndTime now! !
-
-!RealTimeClock methodsFor: 'time' stamp: 'HAW 5/5/2020 17:07:48'!
-today
-
-	^Date today! !
-
-
-!classDefinition: #DefaultMerchantProcessor category: 'TusLibrosREST'!
-MerchantProcessor subclass: #DefaultMerchantProcessor
-	instanceVariableNames: 'transactionId'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibrosREST'!
-
-!DefaultMerchantProcessor methodsFor: 'debit' stamp: 'HAW 5/5/2020 17:13:16'!
-debit: anAmount from: aCreditCard 
-
-	transactionId := transactionId + 1.
-	^transactionId! !
-
-
-!DefaultMerchantProcessor methodsFor: 'initialization' stamp: 'HAW 5/5/2020 17:13:31'!
-initialize
-
-	super initialize.
-	transactionId := 0! !
-
-
 !classDefinition: #TusLibrosClientRestInterface category: 'TusLibrosREST'!
 Object subclass: #TusLibrosClientRestInterface
 	instanceVariableNames: 'port'
@@ -360,13 +321,7 @@ cartIdsIndex: anIndex
 	! !
 
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors - private' stamp: 'EE 6/15/2022 19:28:29'!
-requestInParallel: aClosure thenTrigger: aTriggerClosure
-
-	[aClosure value. aTriggerClosure value.] fork.! !
-
-
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'EE 6/15/2022 19:27:41'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'EE 6/16/2022 15:48:27'!
 addToCart
 
 	| cartId bookIsbn |
@@ -374,30 +329,28 @@ addToCart
 	(self areCartIdAndBookSelected) ifTrue:[
 		cartId := self selectedCartId.
 		bookIsbn := self selectedBook.
-		self requestInParallel: [restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId.] 
-			thenTrigger:[
-		self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId).]]! !
+		(AsyncRunner executeInParallel: [restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId.] 
+			and: [	self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId).]) runInOrder] .! !
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'EE 6/15/2022 19:30:13'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'EE 6/16/2022 15:51:04'!
 createCart
 
 	| newCartId |
 	
 	newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'.
-	self requestInParallel: [cartIds add: newCartId.]
-		thenTrigger: [
-	self triggerEvent: #newCartIdArrived.]! !
+	(AsyncRunner executeInParallel: [cartIds add: newCartId.] 
+	and: [self triggerEvent: #newCartIdArrived.]) runInOrder.! !
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'EE 6/15/2022 19:28:55'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'EE 6/16/2022 15:51:35'!
 listCart
 
 	| cartId |
 	
 	(self isCartIdSelected) ifTrue:[
 		cartId := self selectedCartId.
-		self requestInParallel: [currentSelectedCartContent := restInterface listCart: cartId.]
-			thenTrigger:[
-		self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId]]! !
+		(AsyncRunner executeInParallel: [currentSelectedCartContent := restInterface listCart: cartId.]
+			and:[
+		self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId]) runInOrder]! !
 
 
 !TusLibrosClientTestWindowModel methodsFor: 'initialization' stamp: 'NR 6/9/2022 08:13:11'!
@@ -651,3 +604,42 @@ installForDefaultSystem
 		addService: '/listPurchases' 
 		action: [:request | interface listPurchases: request ].
 	server useDebugErrorHandler ! !
+
+
+!classDefinition: #DefaultMerchantProcessor category: 'TusLibrosREST'!
+ProtoObject subclass: #DefaultMerchantProcessor
+	instanceVariableNames: 'transactionId'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosREST'!
+
+!DefaultMerchantProcessor methodsFor: 'debit' stamp: 'HAW 5/5/2020 17:13:16'!
+debit: anAmount from: aCreditCard 
+
+	transactionId := transactionId + 1.
+	^transactionId! !
+
+
+!DefaultMerchantProcessor methodsFor: 'initialization' stamp: 'HAW 5/5/2020 17:13:31'!
+initialize
+
+	super initialize.
+	transactionId := 0! !
+
+
+!classDefinition: #RealTimeClock category: 'TusLibrosREST'!
+ProtoObject subclass: #RealTimeClock
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibrosREST'!
+
+!RealTimeClock methodsFor: 'time' stamp: 'HAW 5/5/2020 17:07:39'!
+now
+
+	^DateAndTime now! !
+
+!RealTimeClock methodsFor: 'time' stamp: 'HAW 5/5/2020 17:07:48'!
+today
+
+	^Date today! !

@@ -1,3 +1,49 @@
+!classDefinition: #AsyncRunner category: 'TusLibros-Model'!
+Object subclass: #AsyncRunner
+	instanceVariableNames: 'blockClosure blockClosure2'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-Model'!
+
+!AsyncRunner methodsFor: 'initialization' stamp: 'EE 6/16/2022 15:43:56'!
+initializeExecuteInParallel: aBlockClosure and: aBlockClosure2
+	
+	blockClosure := aBlockClosure.
+	blockClosure2 := aBlockClosure2.! !
+
+
+!AsyncRunner methodsFor: 'exectution' stamp: 'EE 6/16/2022 15:49:17'!
+runInOrder
+
+	[blockClosure value. blockClosure2 value.] fork.! !
+
+!AsyncRunner methodsFor: 'exectution' stamp: 'EE 6/16/2022 15:41:02'!
+value
+
+	| firstClosureReady |
+	
+	firstClosureReady := Semaphore new.
+	[blockClosure value. firstClosureReady signal.] fork.
+	
+	blockClosure2 value .
+		
+	firstClosureReady wait.
+		
+
+! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AsyncRunner class' category: 'TusLibros-Model'!
+AsyncRunner class
+	instanceVariableNames: ''!
+
+!AsyncRunner class methodsFor: 'instance creation' stamp: 'EE 6/16/2022 15:39:20'!
+executeInParallel: aBlockClosure and: aBlockClosure2 
+	
+	^self new initializeExecuteInParallel: aBlockClosure and: aBlockClosure2 ! !
+
+
 !classDefinition: #Cart category: 'TusLibros-Model'!
 Object subclass: #Cart
 	instanceVariableNames: 'catalog items'
@@ -753,14 +799,14 @@ salesBook
 	^ salesBook! !
 
 
-!TusLibrosSystemFacade methodsFor: 'private' stamp: 'EE 6/15/2022 19:35:41'!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'EE 6/16/2022 15:44:33'!
 bookPerformance: anItem
 
 	| bookPerformance totalMoney totalSales |
 
 	bookPerformance := Dictionary new.
 	
-	self executeInParallel: [totalSales :=  self totalSalesOf: anItem.] and: [	totalMoney := self totalMoneyRaisedBy: anItem.].
+	(AsyncRunner executeInParallel: [totalSales :=  self totalSalesOf: anItem.] and: [	totalMoney := self totalMoneyRaisedBy: anItem.]) value.
 	
 	bookPerformance at: 'quantity' put: totalSales.
 	bookPerformance at: 'total' put: totalMoney.
@@ -768,21 +814,6 @@ bookPerformance: anItem
 	
 	^bookPerformance
 	
-
-! !
-
-!TusLibrosSystemFacade methodsFor: 'private' stamp: 'EE 6/15/2022 19:34:55'!
-executeInParallel: aClosure and: anotherClosure
-
-	| firstClosureReady |
-	
-	firstClosureReady := Semaphore new.
-	[aClosure value. firstClosureReady signal.] fork.
-	
-	anotherClosure value .
-		
-	firstClosureReady wait.
-		
 
 ! !
 
@@ -801,14 +832,14 @@ salesDoneBy: aUser
 	"Esto es un indicio de que por ahi conviene empezar a pensar en modelar un SaleBook - Hernan"
 	^ salesBook select: [ :aSale | aSale wasDoneBy: aUser ]! !
 
-!TusLibrosSystemFacade methodsFor: 'private' stamp: 'EE 6/15/2022 19:36:23'!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'EE 6/16/2022 15:44:54'!
 storePerformance
 
 	| totalMoney totalSales performance |
 	
 	performance := Dictionary new.
 
-	self executeInParallel: [totalSales := self totalSales] and: [	totalMoney := self totalMoneyRaised.].
+	(AsyncRunner executeInParallel: [totalSales := self totalSales] and: [	totalMoney := self totalMoneyRaised.]) value.
 	
 	performance at: 'quantity' put: totalSales.
 	performance at: 'total' put: totalMoney.
