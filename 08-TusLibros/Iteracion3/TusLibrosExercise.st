@@ -925,20 +925,27 @@ initializeWithAuthenticator: anAuthenticator withCatalogue: aCatalogue withMerch
 	cartUsers := Dictionary new.! !
 
 
-!Interface methodsFor: 'cart creation' stamp: 'LT 6/12/2022 21:12:24'!
+!Interface methodsFor: 'cart creation' stamp: 'EE 6/13/2022 15:31:07'!
 createCartFor: aUsername withPassword: aPassword
 
 	| cart cartId |
 	
-	authenticator login: aUsername with: aPassword.
-	cartId := ((ParkMiller88Random next) * 1000000) asInteger.
+	self login: aUsername withPassword: aPassword.
+	
+	cartId := self createCartId.
 	cart := PublisherCart for: catalogue withClock: (Clock new).
+	
 	carts at: cartId put: cart.
 	cartUsers at: cartId put: aUsername.
 	
 	^ cartId.
 	
 	! !
+
+!Interface methodsFor: 'cart creation' stamp: 'EE 6/13/2022 15:28:46'!
+createCartId
+
+	^ ((ParkMiller88Random next) * 1000000) asInteger! !
 
 
 !Interface methodsFor: 'listing cart' stamp: 'LT 6/12/2022 17:10:01'!
@@ -1038,18 +1045,24 @@ assertCartHasExpired: aCart
 	! !
 
 
-!Interface methodsFor: 'list purchases' stamp: 'LT 6/12/2022 17:11:08'!
+!Interface methodsFor: 'list purchases' stamp: 'EE 6/13/2022 15:30:50'!
 listPurchasesOf: aUsername withPassword: aPassword 
 	
 	| purchasesList |
 	
-	authenticator login: aUsername with: aPassword.
+	self login: aUsername withPassword: aPassword.
 	
 	purchasesList := Bag new.
 	(self getPurchasesOfClient: aUsername) do: [:aSale | purchasesList addAll: (aSale list)].
 	
 	^purchasesList
 	! !
+
+
+!Interface methodsFor: 'authentication' stamp: 'EE 6/13/2022 15:30:50'!
+login: aUsername withPassword: aPassword
+
+	^ authenticator login: aUsername with: aPassword! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1172,7 +1185,6 @@ quantityOf: anISBN
 	self assertBookIsIncludedInCart: anISBN.
 	
 	^books occurrencesOf: anISBN.! !
-
 
 
 !PublisherCart methodsFor: 'enumerating' stamp: 'LT 6/12/2022 15:11:14'!
